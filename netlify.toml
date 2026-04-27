@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Netlify auto-installs @netlify/plugin-nextjs for Next.js sites.
+# Pinning here makes the build deterministic if you change runtimes.
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Local dev with `netlify dev`
+[dev]
+  command = "npm run dev"
+  port = 8888
+  targetPort = 3000
+  framework = "next"
