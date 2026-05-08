@@ -64,6 +64,14 @@ function nextTwelveMonths() {
   return out;
 }
 
+// Strip non-digits from a typed string. Used by every numeric-style input —
+// see comment on the inputs themselves for why we use type="text" instead of
+// type="number".
+function parseDigits(s: string): number | "" {
+  const digits = s.replace(/[^0-9]/g, "");
+  return digits === "" ? "" : Number(digits);
+}
+
 export function TripForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -103,6 +111,29 @@ export function TripForm() {
       ? Math.max(1, groupSize - (typeof pairs === "number" ? pairs : 0))
       : null;
   const [vibes, setVibes] = useState<Vibe[]>([]);
+
+  // Live preview: convert what the user typed into the alternate view.
+  // "$500 per person" with group of 4 → "$2,000 total".
+  const budgetPreview = (() => {
+    if (typeof groupSize !== "number" || groupSize <= 0) return null;
+    const min = typeof budgetMin === "number" ? budgetMin : null;
+    const max = typeof budgetMax === "number" ? budgetMax : null;
+    if (min === null && max === null) return null;
+    const fmt = (n: number) =>
+      n.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      });
+    const convert = (n: number) =>
+      budgetMode === "per_person" ? n * groupSize : n / groupSize;
+    const altLabel = budgetMode === "per_person" ? "total" : "per person";
+    if (min !== null && max !== null) {
+      return `${fmt(convert(min))}–${fmt(convert(max))} ${altLabel}`;
+    }
+    if (max !== null) return `${fmt(convert(max))} ${altLabel} max`;
+    return `${fmt(convert(min!))} ${altLabel} min`;
+  })();
 
   // Hard filters
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -485,11 +516,12 @@ export function TripForm() {
             </label>
             <input
               id="groupSize"
-              type="number"
-              min={1}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
               value={groupSize}
-              onChange={(e) => setGroupSize(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) => setGroupSize(parseDigits(e.target.value))}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-base focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
             />
           </div>
@@ -499,15 +531,11 @@ export function TripForm() {
             </label>
             <input
               id="pairs"
-              type="number"
-              min={0}
-              max={
-                typeof groupSize === "number"
-                  ? Math.floor(groupSize / 2)
-                  : undefined
-              }
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={pairs}
-              onChange={(e) => setPairs(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) => setPairs(parseDigits(e.target.value))}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-base focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
             />
           </div>
@@ -517,11 +545,12 @@ export function TripForm() {
             </label>
             <input
               id="minBeds"
-              type="number"
-              min={1}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder={suggestedMinBeds ? `Auto: ${suggestedMinBeds}` : "Auto"}
               value={minBeds}
-              onChange={(e) => setMinBeds(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) => setMinBeds(parseDigits(e.target.value))}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-base focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
             />
           </div>
@@ -531,43 +560,62 @@ export function TripForm() {
         </p>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Budget range</label>
-          <div className="flex gap-2">
-            <div className="flex flex-1 items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 dark:border-zinc-700 dark:bg-zinc-900">
-              <span className="text-sm text-zinc-400">$</span>
-              <input
-                type="number"
-                min={0}
-                placeholder="Min"
-                aria-label="Minimum budget"
-                value={budgetMin}
-                onChange={(e) =>
-                  setBudgetMin(e.target.value === "" ? "" : Number(e.target.value))
-                }
-                className="w-full bg-transparent py-3 text-base focus:outline-none"
-              />
-              <span className="text-zinc-400">–</span>
-              <input
-                type="number"
-                min={0}
-                placeholder="Max"
-                aria-label="Maximum budget"
-                value={budgetMax}
-                onChange={(e) =>
-                  setBudgetMax(e.target.value === "" ? "" : Number(e.target.value))
-                }
-                className="w-full bg-transparent py-3 text-base focus:outline-none"
-              />
+          <div className="mb-2 flex items-center justify-between">
+            <label className="block text-sm font-medium">Budget range</label>
+            <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-1 text-xs dark:border-zinc-800 dark:bg-zinc-900">
+              <button
+                type="button"
+                onClick={() => setBudgetMode("total")}
+                className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                  budgetMode === "total"
+                    ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                Total
+              </button>
+              <button
+                type="button"
+                onClick={() => setBudgetMode("per_person")}
+                className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                  budgetMode === "per_person"
+                    ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                Per person
+              </button>
             </div>
-            <select
-              value={budgetMode}
-              onChange={(e) => setBudgetMode(e.target.value as "total" | "per_person")}
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-sm focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
-            >
-              <option value="total">total</option>
-              <option value="per_person">per person</option>
-            </select>
           </div>
+          <div className="flex flex-1 items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 dark:border-zinc-700 dark:bg-zinc-900">
+            <span className="text-sm text-zinc-400">$</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Min"
+              aria-label="Minimum budget"
+              value={budgetMin}
+              onChange={(e) => setBudgetMin(parseDigits(e.target.value))}
+              className="w-full bg-transparent py-3 text-base focus:outline-none"
+            />
+            <span className="text-zinc-400">–</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Max"
+              aria-label="Maximum budget"
+              value={budgetMax}
+              onChange={(e) => setBudgetMax(parseDigits(e.target.value))}
+              className="w-full bg-transparent py-3 text-base focus:outline-none"
+            />
+          </div>
+          {budgetPreview && (
+            <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+              = {budgetPreview}
+            </p>
+          )}
         </div>
 
         {/* Stay type */}
@@ -736,30 +784,34 @@ export function TripForm() {
               <div>
                 <label className="block text-sm font-medium mb-1">Min full bathrooms</label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={filters.minFullBaths ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = parseDigits(e.target.value);
                     setFilters({
                       ...filters,
-                      minFullBaths: e.target.value === "" ? undefined : Number(e.target.value),
-                    })
-                  }
+                      minFullBaths: v === "" ? undefined : v,
+                    });
+                  }}
                   className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Max minutes to town</label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={filters.maxMinutesToTown ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = parseDigits(e.target.value);
                     setFilters({
                       ...filters,
-                      maxMinutesToTown: e.target.value === "" ? undefined : Number(e.target.value),
-                    })
-                  }
+                      maxMinutesToTown: v === "" ? undefined : v,
+                    });
+                  }}
                   className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
                 />
               </div>

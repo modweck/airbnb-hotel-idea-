@@ -18,7 +18,14 @@ Field guidance:
 - minBeds: minimum REAL beds (no couches). If user says "needs 5 beds" → 5. If user says "4 bedroom house" without specifying beds, set minBeds to 4 (one bed per bedroom is a sensible floor). Otherwise the app computes from groupSize - pairs.
 - stayType: "houses" if user wants vacation rental / VRBO. "hotels" if user wants a hotel. "both" if either, or unspecified.
 - priority: what matters most. "value" = best deal. "location" = closest to town. "vibe" = matches the feel. "overall" = best overall. Default to "value" if unclear.
-- budgetMin / budgetMax: in USD. budgetMode = "total" (whole trip) or "per_person".
+- budgetMin / budgetMax: in USD. budgetMode = "total" (whole trip) or "per_person". Inferring mode from phrasing matters — listen for cues:
+   - "$500 each" / "$300 a head" / "per person" / "pp" → per_person
+   - "$4k total" / "for the whole trip" / "all in" / unmarked single number with group context → total
+   - Examples:
+     - "we want to spend $500 each" → budgetMin: 500, budgetMode: "per_person"
+     - "$4k total budget" → budgetMax: 4000, budgetMode: "total"
+     - "couple, around $300 a head" → budgetMin: 300, budgetMode: "per_person"
+     - "we have $2000 for the whole trip" → budgetMax: 2000, budgetMode: "total"
 - vibes: pick from {lively, chill, romantic, family, adventure, party} — only if user clearly signals one or more.
 - Dates: only set checkIn/checkOut if user gives explicit dates. If they say "flexible" / "any time in summer" / "next month", set flexibleDates: true and use flexibleMonths (YYYY-MM strings). The user picks trip duration manually in the UI.
 - hardFilters.pool: array of allowed pool types. Read negation carefully:
