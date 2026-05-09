@@ -91,6 +91,8 @@ export function TripForm() {
   // (Above renames couples → pairs; UI label uses "Sharing")
   const [minBeds, setMinBeds] = useState<number | "">("");
   const [stayType, setStayType] = useState<"houses" | "hotels" | "both">("both");
+  const [minStars, setMinStars] = useState<number | "">("");
+  const [peoplePerRoom, setPeoplePerRoom] = useState<2 | 4>(4);
   const [priority, setPriority] = useState<
     "value" | "location" | "vibe" | "overall"
   >("value");
@@ -249,6 +251,8 @@ export function TripForm() {
     if (budgetMax !== "") params.set("budgetMax", String(budgetMax));
     if (budgetMin !== "" || budgetMax !== "") params.set("budgetMode", budgetMode);
     if (vibes.length) params.set("vibes", vibes.join(","));
+    if (minStars !== "") params.set("minStars", String(minStars));
+    params.set("peoplePerRoom", String(peoplePerRoom));
     params.set("filters", encodeURIComponent(JSON.stringify(filters)));
 
     trackSearch({
@@ -310,7 +314,18 @@ export function TripForm() {
 
       {/* Where & when */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Where & when</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Where & when</h2>
+          <a
+            href="/saved"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+            Saved
+          </a>
+        </div>
         <div>
           <label className="block text-sm font-medium mb-2" htmlFor="location">
             Location
@@ -587,6 +602,51 @@ export function TripForm() {
         </div>
       </section>
 
+        {/* Hotel-specific: Star rating + Room occupancy */}
+        {(stayType === "hotels" || stayType === "both") && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium mb-2">Min star rating</label>
+              <select
+                value={minStars}
+                onChange={(e) => setMinStars(e.target.value === "" ? "" : Number(e.target.value))}
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-base focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <option value="">Any</option>
+                <option value="2">2+ stars</option>
+                <option value="3">3+ stars</option>
+                <option value="4">4+ stars</option>
+                <option value="5">5 stars</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">People per room</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { val: 2 as const, label: "2", sub: "Own bed" },
+                  { val: 4 as const, label: "4", sub: "Share beds" },
+                ]).map((opt) => {
+                  const active = peoplePerRoom === opt.val;
+                  return (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setPeoplePerRoom(opt.val)}
+                      className={`rounded-lg border px-3 py-2 text-left transition-colors ${
+                        active
+                          ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
+                          : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                      }`}
+                    >
+                      <div className="text-sm font-semibold">{opt.label}/room</div>
+                      <div className="text-xs opacity-70">{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       {/* What matters most? — drives the ranking */}
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">

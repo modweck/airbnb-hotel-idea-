@@ -54,6 +54,8 @@ export default function RootLayout({
             <a href="/contact" className="hover:text-zinc-900 dark:hover:text-zinc-300">Contact</a>
             <span>·</span>
             <a href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-300">About</a>
+            <span>·</span>
+            <a href="/saved" className="hover:text-zinc-900 dark:hover:text-zinc-300">Saved</a>
           </div>
           <p className="mt-3 max-w-md mx-auto text-zinc-400 dark:text-zinc-600">
             Some links on this website are affiliate links, which means we may earn a commission if you make a booking or purchase through them, at no additional cost to you. This helps support the platform and allows us to continue improving the service.

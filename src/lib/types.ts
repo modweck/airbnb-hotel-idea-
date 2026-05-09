@@ -100,6 +100,7 @@ export interface Listing {
   affiliateUrl?: string;
 
   name: string;
+  hotelStars?: number;  // 1-5 star rating for hotels
   description?: string;
   photos: string[];
 
