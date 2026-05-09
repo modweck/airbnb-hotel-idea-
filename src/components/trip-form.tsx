@@ -9,6 +9,7 @@ import type {
   FlexibleDuration,
 } from "@/lib/types";
 import type { ParsedTrip } from "@/lib/trip-schema";
+import { trackSearch } from "@/lib/analytics";
 
 const VIBES: { id: Vibe; label: string }[] = [
   { id: "lively", label: "Lively" },
@@ -249,6 +250,16 @@ export function TripForm() {
     if (budgetMin !== "" || budgetMax !== "") params.set("budgetMode", budgetMode);
     if (vibes.length) params.set("vibes", vibes.join(","));
     params.set("filters", encodeURIComponent(JSON.stringify(filters)));
+
+    trackSearch({
+      location,
+      groupSize: Number(groupSize),
+      checkIn: checkIn || undefined,
+      checkOut: checkOut || undefined,
+      budgetMode: budgetMin !== "" || budgetMax !== "" ? budgetMode : undefined,
+      budgetMin: budgetMin !== "" ? Number(budgetMin) : undefined,
+      budgetMax: budgetMax !== "" ? Number(budgetMax) : undefined,
+    });
 
     router.push(`/results?${params.toString()}`);
   }
