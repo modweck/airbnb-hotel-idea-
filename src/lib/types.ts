@@ -101,6 +101,7 @@ export interface Listing {
 
   name: string;
   hotelStars?: number;  // 1-5 star rating for hotels
+  hotelRooms?: number;  // number of rooms needed for the group
   description?: string;
   photos: string[];
 
@@ -165,6 +166,11 @@ export interface Listing {
     outdoorSpace?: "minimal" | "moderate" | "expansive";
     renovationLevel?: RenovationLevel;
   };
+
+  distanceMi?: number;          // miles to user's "distance to" target
+  distanceTo?: string;          // name of the target place
+  vibeTag?: "lively" | "moderate" | "quiet";
+  vibeMi?: number;              // miles to nearest nightlife hotspot
 
   duplicateGroupId?: string;  // feature 17
 

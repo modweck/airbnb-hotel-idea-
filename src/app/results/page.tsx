@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { ListingCard } from "@/components/listing-card";
+import { SortableListings } from "@/components/sortable-listings";
 import { applyBudgetFilter, type BudgetInput } from "@/lib/budget";
 import { getListingProvider } from "@/lib/listing-provider";
 import type { Listing } from "@/lib/types";
+import { geocodePlace, distanceMiles } from "@/lib/geocode";
+import { findNightlifeHotspots, applyVibeToListings } from "@/lib/vibe";
 
 type SearchParams = {
   location?: string;
@@ -23,6 +25,7 @@ type SearchParams = {
   priority?: string;
   vibes?: string;
   filters?: string;
+  distanceTo?: string;
 };
 
 function parseNumber(s: string | undefined): number | undefined {
@@ -53,6 +56,7 @@ export default async function ResultsPage(props: PageProps<"/results">) {
   const stayType = (sp.stayType ?? "both") as "houses" | "hotels" | "both";
   const priority = sp.priority ?? "value";
   const vibes = sp.vibes?.split(",").filter(Boolean) ?? [];
+  const distanceTo = sp.distanceTo ?? "";
 
   const provider = getListingProvider();
   let listings: Listing[] = [];
@@ -75,6 +79,34 @@ export default async function ResultsPage(props: PageProps<"/results">) {
     } catch (err) {
       error = err instanceof Error ? err.message : "Search failed";
     }
+  }
+
+  // Geocode "distance to" target and calculate miles from each listing
+  if (distanceTo && listings.length > 0) {
+    const target = await geocodePlace(distanceTo);
+    if (target) {
+      for (const l of listings) {
+        if (l.location.lat != null && l.location.lng != null) {
+          l.distanceMi = Math.round(
+            distanceMiles(target, { lat: l.location.lat, lng: l.location.lng }) * 10
+          ) / 10;
+          l.distanceTo = distanceTo;
+        }
+      }
+    }
+  }
+
+  // Tag listings with vibe (lively/moderate/quiet) based on nightlife proximity
+  if (location && listings.length > 0) {
+    const hotspots = await findNightlifeHotspots(location);
+    applyVibeToListings(listings, hotspots);
+  }
+
+  // Filter by vibe if user selected one
+  const vibeMap: Record<string, string> = { lively: "lively", chill: "moderate", adventure: "quiet" };
+  const selectedVibe = vibes.length > 0 ? vibeMap[vibes[0]] : null;
+  if (selectedVibe) {
+    listings = listings.filter((l) => l.vibeTag === selectedVibe);
   }
 
   const budgetInput: BudgetInput = { budgetMin, budgetMax, budgetMode };
@@ -141,50 +173,13 @@ export default async function ResultsPage(props: PageProps<"/results">) {
         totalShown === 0 ? (
           <EmptyState budgetMax={budgetMax} budgetModeLabel={budgetModeLabel} />
         ) : (
-          <div className="space-y-8">
-            {matched.length > 0 && (
-              <section className="space-y-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                  {matched.length === 1
-                    ? "1 match"
-                    : `${matched.length} matches`}
-                </h2>
-                <div className="space-y-3">
-                  {matched.map((l) => (
-                    <ListingCard
-                      key={l.id}
-                      listing={l}
-                      groupSize={groupSize}
-                      budgetMode={budgetMode}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {overflow.length > 0 && (
-              <section className="space-y-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                  Slightly over budget
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  We didn&apos;t find {3 - matched.length} more matches under
-                  your ceiling, so here are options up to ~15% over.
-                </p>
-                <div className="space-y-3">
-                  {overflow.map((l) => (
-                    <ListingCard
-                      key={l.id}
-                      listing={l}
-                      groupSize={groupSize}
-                      budgetMode={budgetMode}
-                      overBudget
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
+          <SortableListings
+            matched={matched}
+            overflow={overflow}
+            groupSize={groupSize}
+            budgetMode={budgetMode}
+            hasDistance={!!distanceTo}
+          />
         )
       )}
     </main>

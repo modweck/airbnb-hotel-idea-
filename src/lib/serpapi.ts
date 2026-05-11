@@ -200,6 +200,14 @@ function serpPropertyToListing(
   };
 }
 
+/** Drop listings with missing/broken data that SerpAPI sometimes returns */
+function isValidListing(l: Listing): boolean {
+  if (l.url === "" || l.pricing.totalForStay <= 0) return false;
+  // Hotels don't report bedrooms/maxGuests — only filter those for houses
+  if (l.type === "house" && (l.capacity.bedrooms <= 0 || l.capacity.maxGuests <= 0)) return false;
+  return true;
+}
+
 export interface SearchResults {
   houses: Listing[];
   hotels: Listing[];
@@ -259,9 +267,9 @@ export async function searchListings(params: {
         minBathrooms,
         vacationRentals: true,
       }).then((res) => {
-        results.houses = (res.properties ?? []).map((p) =>
-          serpPropertyToListing(p, true, groupSize, nights)
-        );
+        results.houses = (res.properties ?? [])
+          .map((p) => serpPropertyToListing(p, true, groupSize, nights))
+          .filter(isValidListing);
       })
     );
   }
@@ -290,8 +298,10 @@ export async function searchListings(params: {
               groupSize > 0
                 ? Math.round(listing.pricing.totalForStay / groupSize)
                 : listing.pricing.totalForStay;
+            listing.hotelRooms = hotelRooms;
             return listing;
-          });
+          })
+          .filter(isValidListing);
       })
     );
   }
