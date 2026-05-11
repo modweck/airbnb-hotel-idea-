@@ -286,7 +286,10 @@ export async function searchListings(params: {
             // Multiply hotel price by number of rooms needed
             listing.pricing.nightlyBase *= hotelRooms;
             listing.pricing.totalForStay *= hotelRooms;
-            listing.pricing.totalPerPerson = Math.round(listing.pricing.totalForStay / groupSize);
+            listing.pricing.totalPerPerson =
+              groupSize > 0
+                ? Math.round(listing.pricing.totalForStay / groupSize)
+                : listing.pricing.totalForStay;
             return listing;
           });
       })

@@ -16,8 +16,22 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const checkInDate = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
+  if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+    return Response.json(
+      { error: "Invalid date format. Use YYYY-MM-DD." },
+      { status: 400 }
+    );
+  }
+  if (checkOutDate.getTime() <= checkInDate.getTime()) {
+    return Response.json(
+      { error: "checkOut must be after checkIn." },
+      { status: 400 }
+    );
+  }
+
   const stayType = (sp.get("stayType") ?? "both") as "houses" | "hotels" | "both";
-  const pairs = parseInt(sp.get("pairs") ?? "0", 10);
   const budgetMin = sp.get("budgetMin") ? parseInt(sp.get("budgetMin")!, 10) : undefined;
   const budgetMax = sp.get("budgetMax") ? parseInt(sp.get("budgetMax")!, 10) : undefined;
   const budgetMode = sp.get("budgetMode") ?? "total";

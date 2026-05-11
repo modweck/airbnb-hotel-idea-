@@ -33,20 +33,49 @@ function getAll(): SavedListing[] {
   }
 }
 
+// Cached snapshot so useSyncExternalStore consumers get a stable reference
+// between events (returning a fresh array each call would loop forever).
+let snapshotCache: SavedListing[] | null = null;
+const EMPTY: SavedListing[] = [];
+
 function setAll(listings: SavedListing[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
   } catch {
     /* storage full */
   }
+  invalidate();
+}
+
+function invalidate() {
+  snapshotCache = null;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("saved-changed"));
+  }
 }
 
 export function getSavedListings(): SavedListing[] {
-  return getAll();
+  if (typeof window === "undefined") return EMPTY;
+  if (snapshotCache === null) snapshotCache = getAll();
+  return snapshotCache;
+}
+
+export function getSavedListingsServerSnapshot(): SavedListing[] {
+  return EMPTY;
+}
+
+export function subscribeSaved(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("saved-changed", callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener("saved-changed", callback);
+    window.removeEventListener("storage", callback);
+  };
 }
 
 export function isSaved(id: string): boolean {
-  return getAll().some((l) => l.id === id);
+  return getSavedListings().some((l) => l.id === id);
 }
 
 export function saveListing(listing: SavedListing) {
