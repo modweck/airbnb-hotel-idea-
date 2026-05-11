@@ -1,25 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
-import { getSavedListings, unsaveListing, type SavedListing } from "@/lib/saved";
+import { useSyncExternalStore } from "react";
+import {
+  getSavedListings,
+  getSavedListingsServerSnapshot,
+  subscribeSaved,
+  unsaveListing,
+} from "@/lib/saved";
 
 export default function SavedPage() {
-  const [listings, setListings] = useState<SavedListing[]>([]);
-
-  const refresh = useCallback(() => {
-    setListings(getSavedListings());
-  }, []);
-
-  useEffect(() => {
-    refresh();
-    window.addEventListener("saved-changed", refresh);
-    return () => window.removeEventListener("saved-changed", refresh);
-  }, [refresh]);
+  const listings = useSyncExternalStore(
+    subscribeSaved,
+    getSavedListings,
+    getSavedListingsServerSnapshot,
+  );
 
   function handleRemove(id: string) {
     unsaveListing(id);
-    window.dispatchEvent(new Event("saved-changed"));
   }
 
   return (

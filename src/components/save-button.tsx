@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { isSaved, toggleSaved, type SavedListing } from "@/lib/saved";
+import { useSyncExternalStore } from "react";
+import { isSaved, subscribeSaved, toggleSaved, type SavedListing } from "@/lib/saved";
 
 interface SaveButtonProps {
   listing: SavedListing;
@@ -9,19 +9,16 @@ interface SaveButtonProps {
 }
 
 export function SaveButton({ listing, className = "" }: SaveButtonProps) {
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    setSaved(isSaved(listing.id));
-  }, [listing.id]);
+  const saved = useSyncExternalStore(
+    subscribeSaved,
+    () => isSaved(listing.id),
+    () => false,
+  );
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    const nowSaved = toggleSaved(listing);
-    setSaved(nowSaved);
-    // Dispatch event so other components (like nav badge) can update
-    window.dispatchEvent(new Event("saved-changed"));
+    toggleSaved(listing);
   }
 
   return (
