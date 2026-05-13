@@ -26,8 +26,14 @@ export interface ListingProvider {
 export const serpapiProvider: ListingProvider = {
   name: "serpapi",
   async fetch(q) {
-    const solos = Math.max(0, q.groupSize - (q.pairs ?? 0) * 2);
-    const hotelRooms = (q.pairs ?? 0) + Math.ceil(solos / 2);
+    // Each hotel room has 2 queen/double beds → fits 4 people.
+    // If user specified minBeds, use ceil(beds / 2 per room).
+    // Otherwise use ceil(groupSize / 4 per room).
+    const bedsPerRoom = 2;
+    const guestsPerRoom = bedsPerRoom * 2; // 2 queen beds × 2 people each = 4
+    const hotelRooms = q.minBedrooms
+      ? Math.ceil(q.minBedrooms / bedsPerRoom)
+      : Math.ceil(q.groupSize / guestsPerRoom);
     const results = await searchListings({
       location: q.location,
       checkIn: q.checkIn,

@@ -10,14 +10,12 @@ import type {
 } from "@/lib/types";
 import type { ParsedTrip } from "@/lib/trip-schema";
 import { trackSearch } from "@/lib/analytics";
+import { PlaceAutocomplete } from "@/components/place-autocomplete";
 
 const VIBES: { id: Vibe; label: string }[] = [
   { id: "lively", label: "Lively" },
-  { id: "chill", label: "Chill" },
-  { id: "party", label: "Party" },
-  { id: "family", label: "Family" },
-  { id: "romantic", label: "Romantic" },
-  { id: "adventure", label: "Adventure" },
+  { id: "chill", label: "Moderate" },
+  { id: "adventure", label: "Quiet" },
 ];
 
 const POOL_TYPES: { id: PoolType; label: string }[] = [
@@ -98,6 +96,7 @@ export function TripForm() {
   const [pairs, setPairs] = useState<number | "">(0);
   // (Above renames couples → pairs; UI label uses "Sharing")
   const [minBeds, setMinBeds] = useState<number | "">("");
+  const [distanceTo, setDistanceTo] = useState("");
   const [stayType, setStayType] = useState<"houses" | "hotels" | "both">("both");
   const [minStars, setMinStars] = useState<number | "">("");
   const [peoplePerRoom, setPeoplePerRoom] = useState<2 | 4>(4);
@@ -148,10 +147,6 @@ export function TripForm() {
     maxMinutesToTown: undefined,
     allowCouchBeds: false,
   });
-
-  function toggleVibe(v: Vibe) {
-    setVibes((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
-  }
 
   function applyParsed(parsed: ParsedTrip) {
     const applied: string[] = [];
@@ -284,6 +279,7 @@ export function TripForm() {
     if (vibes.length) params.set("vibes", vibes.join(","));
     if (minStars !== "") params.set("minStars", String(minStars));
     params.set("peoplePerRoom", String(peoplePerRoom));
+    if (distanceTo.trim()) params.set("distanceTo", distanceTo.trim());
     params.set("filters", encodeURIComponent(JSON.stringify(filters)));
 
     trackSearch({
@@ -361,15 +357,30 @@ export function TripForm() {
           <label className="block text-sm font-medium mb-2" htmlFor="location">
             Location
           </label>
-          <input
+          <PlaceAutocomplete
             id="location"
-            type="text"
             required
             placeholder="e.g. Lake Tahoe, Miami, Aspen"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={setLocation}
             className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2" htmlFor="distanceTo">
+            Distance to (optional)
+          </label>
+          <PlaceAutocomplete
+            id="distanceTo"
+            placeholder="e.g. South Beach, Times Square, 123 Ocean Dr"
+            value={distanceTo}
+            onChange={setDistanceTo}
+            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
+          />
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            We&apos;ll show how far each listing is from this place
+          </p>
         </div>
 
         {/* Toggle between exact dates and flexible-dates picker */}
@@ -730,15 +741,26 @@ export function TripForm() {
 
       {/* Vibe */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Vibe</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Area vibe</h2>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setVibes([])}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              vibes.length === 0
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            }`}
+          >
+            Any
+          </button>
           {VIBES.map((v) => {
             const active = vibes.includes(v.id);
             return (
               <button
                 key={v.id}
                 type="button"
-                onClick={() => toggleVibe(v.id)}
+                onClick={() => setVibes([v.id])}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   active
                     ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"

@@ -64,6 +64,19 @@ export function ListingCard({
         <span className="absolute right-2 top-2 rounded-full bg-zinc-900/90 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
           {listing.type}
         </span>
+        {listing.vibeTag && (
+          <span
+            className={`absolute left-2 ${overBudget ? "top-10" : "top-2"} rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white ${
+              listing.vibeTag === "lively"
+                ? "bg-emerald-600/90"
+                : listing.vibeTag === "moderate"
+                ? "bg-blue-500/90"
+                : "bg-zinc-500/90"
+            }`}
+          >
+            {listing.vibeTag}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col justify-between gap-2 p-4">
@@ -75,14 +88,27 @@ export function ListingCard({
             {listing.location.town}
             {listing.location.region ? `, ${listing.location.region}` : ""}
             {minutesLabel ? ` · ${minutesLabel}` : ""}
+            {listing.distanceMi != null && listing.distanceTo && (
+              <> · {listing.distanceMi} mi to {listing.distanceTo.split(",")[0]}</>
+            )}
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {listing.capacity.realBeds} real bed
-            {listing.capacity.realBeds === 1 ? "" : "s"} ·{" "}
-            {listing.bathrooms.full} bath
-            {listing.bathrooms.full === 1 ? "" : "s"} · sleeps{" "}
-            {listing.capacity.maxGuests}
-          </p>
+          {listing.type === "hotel" && listing.hotelRooms ? (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {listing.hotelRooms} room{listing.hotelRooms === 1 ? "" : "s"}
+              {" · 2 queen beds each"}
+              {" · "}
+              {formatUSD(listing.pricing.nightlyBase / listing.hotelRooms)}/room/night
+              {listing.hotelStars ? ` · ${listing.hotelStars}★` : ""}
+            </p>
+          ) : (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {listing.capacity.realBeds} real bed
+              {listing.capacity.realBeds === 1 ? "" : "s"} ·{" "}
+              {listing.bathrooms.full} bath
+              {listing.bathrooms.full === 1 ? "" : "s"} · sleeps{" "}
+              {listing.capacity.maxGuests}
+            </p>
+          )}
         </div>
 
         <div className="flex items-end justify-between">
