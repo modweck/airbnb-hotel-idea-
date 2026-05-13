@@ -12,32 +12,36 @@ interface LatLng {
 
 /** Search Google Places for nightlife/bar clusters in a city. Returns hotspot coordinates. */
 export async function findNightlifeHotspots(city: string): Promise<LatLng[]> {
-  const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key) return [];
+  try {
+    const key = process.env.GOOGLE_PLACES_API_KEY;
+    if (!key) return [];
 
-  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": key,
-      "X-Goog-FieldMask": "places.location",
-    },
-    body: JSON.stringify({
-      textQuery: `popular bars and nightlife in ${city}`,
-      maxResultCount: 10,
-    }),
-  });
+    const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": "places.location",
+      },
+      body: JSON.stringify({
+        textQuery: `popular bars and nightlife in ${city}`,
+        maxResultCount: 10,
+      }),
+    });
 
-  if (!res.ok) return [];
+    if (!res.ok) return [];
 
-  const data = (await res.json()) as {
-    places?: { location?: { latitude: number; longitude: number } }[];
-  };
+    const data = (await res.json()) as {
+      places?: { location?: { latitude: number; longitude: number } }[];
+    };
 
-  return (data.places ?? [])
-    .map((p) => p.location)
-    .filter((loc): loc is { latitude: number; longitude: number } => loc != null)
-    .map((loc) => ({ lat: loc.latitude, lng: loc.longitude }));
+    return (data.places ?? [])
+      .map((p) => p.location)
+      .filter((loc): loc is { latitude: number; longitude: number } => loc != null)
+      .map((loc) => ({ lat: loc.latitude, lng: loc.longitude }));
+  } catch {
+    return [];
+  }
 }
 
 /** Distance in miles from a point to the nearest hotspot */

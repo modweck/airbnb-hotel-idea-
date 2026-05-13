@@ -6,29 +6,33 @@ interface LatLng {
 }
 
 export async function geocodePlace(query: string): Promise<LatLng | null> {
-  const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key) return null;
+  try {
+    const key = process.env.GOOGLE_PLACES_API_KEY;
+    if (!key) return null;
 
-  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": key,
-      "X-Goog-FieldMask": "places.location",
-    },
-    body: JSON.stringify({ textQuery: query }),
-  });
+    const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": "places.location",
+      },
+      body: JSON.stringify({ textQuery: query }),
+    });
 
-  if (!res.ok) return null;
+    if (!res.ok) return null;
 
-  const data = (await res.json()) as {
-    places?: { location?: { latitude: number; longitude: number } }[];
-  };
+    const data = (await res.json()) as {
+      places?: { location?: { latitude: number; longitude: number } }[];
+    };
 
-  const loc = data.places?.[0]?.location;
-  if (!loc) return null;
+    const loc = data.places?.[0]?.location;
+    if (!loc) return null;
 
-  return { lat: loc.latitude, lng: loc.longitude };
+    return { lat: loc.latitude, lng: loc.longitude };
+  } catch {
+    return null;
+  }
 }
 
 /** Haversine distance in miles between two lat/lng points */
