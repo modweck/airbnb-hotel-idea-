@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     const key = process.env.GOOGLE_PLACES_API_KEY;
     if (!key) {
-      return Response.json([]);
+      return Response.json({ debug: "no key found", envKeys: Object.keys(process.env).filter(k => k.includes("GOOGLE") || k.includes("SERP")) }, { status: 200 });
     }
 
     const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
