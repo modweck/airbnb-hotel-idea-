@@ -65,3 +65,15 @@ Location Intelligence, Hard Filters.
 
 **Phase 5 — ML / heavy**
 Photo Intelligence, BS Filter, Duplicate Detection, Watch Mode, Flexible Date Optimizer.
+
+## Contributing
+
+Two-person collab — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the
+branch → PR → merge loop, how to recover from common git mistakes, and
+how to use the GitHub project board for sprint planning.
+
+## Deploying
+
+Production deploys go to Netlify, triggered by tag pushes. Beginner
+path: GitHub Releases → "Draft a new release" → tag `vX.Y.Z` → Publish.
+Full instructions in [CONTRIBUTING.md](./CONTRIBUTING.md#releasing).

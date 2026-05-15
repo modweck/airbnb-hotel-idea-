@@ -64,6 +64,10 @@ export default function SavedPage() {
               className="flex gap-4 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900"
             >
               {l.photo && (
+                // Listings come from external scrapers (VRBO, Booking)
+                // with arbitrary hosts; next/image would require
+                // permissive remotePatterns. Plain <img> is fine here.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={l.photo}
                   alt={l.name}
