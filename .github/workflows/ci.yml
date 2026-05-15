@@ -33,6 +33,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Generate Next.js route types (PageProps<"/x">, etc.) into .next/types.
+      # tsconfig.json includes .next/types/**/*.ts, so tsc fails without this.
+      - run: npx next typegen
       - run: npx tsc --noEmit
 
   test:
