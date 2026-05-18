@@ -25,10 +25,11 @@ export function PlaceAutocomplete({
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Debounced fetch suggestions
+  // Debounced fetch suggestions. We deliberately do not clear
+  // `suggestions` inside this effect (setState-in-effect lint rule);
+  // when the input gets too short we clear in the input's onChange below.
   useEffect(() => {
     if (value.length < 2) {
-      setSuggestions([]);
       return;
     }
 
@@ -96,7 +97,14 @@ export function PlaceAutocomplete({
         required={required}
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v.length < 2 && suggestions.length > 0) {
+            setSuggestions([]);
+            setOpen(false);
+          }
+          onChange(v);
+        }}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         onKeyDown={handleKeyDown}
         autoComplete="off"

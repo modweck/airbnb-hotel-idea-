@@ -1,0 +1,4 @@
+# Every PR auto-requests review from both partners.
+# Required reviews are not enforced (2-person team, medium-strictness
+# workflow) but this guarantees notifications.
+* @ikkidev @modweck
