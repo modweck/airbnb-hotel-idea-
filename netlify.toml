@@ -2,6 +2,13 @@
   command = "npm run build"
   publish = ".next"
 
+# Skip deploy-preview builds while feat/ios-mobile-port is in flight.
+# Next build is intentionally broken on that branch (Tailwind v3↔v4 mismatch
+# during NativeWind migration). Real Netlify config switches to Expo export
+# in Phase 1 on the MBP. Drop this block once main builds Expo.
+[context.deploy-preview]
+  ignore = "exit 0"
+
 # Netlify auto-installs @netlify/plugin-nextjs for Next.js sites.
 # Pinning here makes the build deterministic if you change runtimes.
 
