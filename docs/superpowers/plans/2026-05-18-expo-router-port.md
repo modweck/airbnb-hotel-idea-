@@ -16,22 +16,22 @@
 
 ## Phase guide
 
-| Phase | Title | Independent of port? |
-|-------|-------|----------------------|
-| 1 | Spike 1 — Netlify + Expo `server` adapter probe | Branch-killer gate |
-| 2 | Spike 2 — Extract `searchTrip()` pipeline | Yes (can land on `main` first) |
-| 3 | Spike 3 — NativeWind v4 + Tailwind v4 + `trip-form` vertical slice | No |
-| 4 | Spike 4 — Supabase universal client + `kvStore` on iOS | No |
-| 5 | Server-secret ESLint boundary | No |
-| 6 | Port API routes | No |
-| 7 | Universal client wrappers | No |
-| 8 | Port shared helpers (`saved.ts`, analytics, types) | No |
-| 9 | Port remaining components | No |
-| 10 | Port pages | No |
-| 11 | Delete Next.js | No |
-| 12 | Update CI | No |
-| 13 | Docs (incl. `docs/mobile-handoff.md`) | No |
-| 14 | Spike 5 — iOS sim smoke (on MacBook Pro) | Runs off-WSL |
+| Phase | Title | Status |
+|-------|-------|--------|
+| 1 | Spike 1 — Netlify + Expo `server` adapter probe | **Done** (deployed to `trip-planner-expo-test.netlify.app`, 2026-05-19) |
+| 2 | Spike 2 — Extract `searchTrip()` pipeline | Done |
+| 3 | Spike 3 — NativeWind + Tailwind + `trip-form` vertical slice | Done (Tailwind held at v3 for NativeWind 4 compat; `trip-form` ported on MBP) |
+| 4 | Spike 4 — Supabase universal client + `kvStore` on iOS | Done (kvStore + supabase client; iOS smoke is Phase 14) |
+| 5 | Server-secret ESLint boundary | Done |
+| 6 | Port API routes | Done |
+| 7 | Universal client wrappers | Done |
+| 8 | Port shared helpers (`saved.ts`, analytics, types) | Done |
+| 9 | Port remaining components | **Done** (`place-autocomplete`, `listing-card`, `save-button`, `sortable-listings`, `trip-form/**` all RN) |
+| 10 | Port pages | **Done** (`index`, `results`, `saved`, `about`, `contact`, `privacy`, `terms`) |
+| 11 | Delete Next.js | **Not started** (next dependency cleanup + `src/app/` removal) |
+| 12 | Update CI | **Done** (`ci.yml` + `release.yml` rewritten for Expo; Netlify build hook in `release.yml`) |
+| 13 | Docs (incl. `docs/mobile-handoff.md`) | In progress (handoff kept current) |
+| 14 | Spike 5 — iOS sim smoke (on MacBook Pro) | Not started (MBP) |
 
 > **Pragmatic rule for UI rewrites:** several tasks involve porting components I cannot fully predict line-by-line (Expo + paper.design output is exploratory). For those tasks, the plan specifies the **contract** (RN primitives to use, props/behavior to preserve, validation criteria). Treat them as TDD-by-smoke-test: render the screen with `npx expo start --web`, exercise the behavior, confirm no console errors and visual parity with main.
 
