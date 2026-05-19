@@ -44,8 +44,7 @@
     "spike",
     "dist",
     ".expo",
-    "src/app",
-    "src/components"
+    "src/app"
   ],
   "extends": "expo/tsconfig.base"
 }

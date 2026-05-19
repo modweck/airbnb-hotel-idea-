@@ -1,9 +1,9 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
+import { autocompletePlaces } from "@/client/places";
 
 interface PlaceAutocompleteProps {
-  id: string;
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -12,22 +12,15 @@ interface PlaceAutocompleteProps {
 }
 
 export function PlaceAutocomplete({
-  id,
   value,
   onChange,
   placeholder,
-  required,
   className,
 }: PlaceAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced fetch suggestions. We deliberately do not clear
-  // `suggestions` inside this effect (setState-in-effect lint rule);
-  // when the input gets too short we clear in the input's onChange below.
   useEffect(() => {
     if (value.length < 2) {
       return;
@@ -36,15 +29,9 @@ export function PlaceAutocomplete({
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/places-autocomplete?q=${encodeURIComponent(value)}`
-        );
-        if (res.ok) {
-          const data = (await res.json()) as string[];
-          setSuggestions(data);
-          setOpen(data.length > 0);
-          setActiveIndex(-1);
-        }
+        const data = await autocompletePlaces(value);
+        setSuggestions(data);
+        setOpen(data.length > 0);
       } catch {
         // silently ignore
       }
@@ -55,50 +42,18 @@ export function PlaceAutocomplete({
     };
   }, [value]);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
   function selectSuggestion(s: string) {
     onChange(s);
     setOpen(false);
     setSuggestions([]);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (!open || suggestions.length === 0) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((i) => (i < suggestions.length - 1 ? i + 1 : 0));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((i) => (i > 0 ? i - 1 : suggestions.length - 1));
-    } else if (e.key === "Enter" && activeIndex >= 0) {
-      e.preventDefault();
-      selectSuggestion(suggestions[activeIndex]);
-    } else if (e.key === "Escape") {
-      setOpen(false);
-    }
-  }
-
   return (
-    <div ref={wrapperRef} className="relative" style={{ zIndex: open ? 999 : "auto" }}>
-      <input
-        id={id}
-        type="text"
-        required={required}
+    <View className="relative">
+      <TextInput
         placeholder={placeholder}
         value={value}
-        onChange={(e) => {
-          const v = e.target.value;
+        onChangeText={(v) => {
           if (v.length < 2 && suggestions.length > 0) {
             setSuggestions([]);
             setOpen(false);
@@ -106,27 +61,24 @@ export function PlaceAutocomplete({
           onChange(v);
         }}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
-        onKeyDown={handleKeyDown}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
         autoComplete="off"
+        autoCorrect={false}
         className={className}
       />
       {open && suggestions.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-          {suggestions.map((s, i) => (
-            <li
+        <View className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          {suggestions.map((s) => (
+            <Pressable
               key={s}
-              onMouseDown={() => selectSuggestion(s)}
-              className={`cursor-pointer px-4 py-2.5 text-sm ${
-                i === activeIndex
-                  ? "bg-zinc-100 dark:bg-zinc-800"
-                  : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-              }`}
+              onPress={() => selectSuggestion(s)}
+              className="px-4 py-2.5 active:bg-zinc-100 hover:bg-zinc-50 dark:active:bg-zinc-800 dark:hover:bg-zinc-800/50"
             >
-              {s}
-            </li>
+              <Text className="text-sm text-zinc-900 dark:text-zinc-100">{s}</Text>
+            </Pressable>
           ))}
-        </ul>
+        </View>
       )}
-    </div>
+    </View>
   );
 }
