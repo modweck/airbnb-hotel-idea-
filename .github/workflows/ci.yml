@@ -11,6 +11,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pr-link-check:
+    name: pr-link-check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Closes/Fixes/Resolves #N in PR body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          if echo "$PR_LABELS" | grep -q '"no-issue"'; then
+            echo "PR has 'no-issue' label — skipping linkage check."
+            exit 0
+          fi
+          if printf '%s' "$PR_BODY" | grep -Eiq '(closes|fixes|resolves)[[:space:]]+#[0-9]+'; then
+            echo "OK — PR body links an issue."
+            exit 0
+          fi
+          echo "ERROR: PR body must include 'Closes #N' (or Fixes/Resolves) so the issue auto-closes and the sprint-board card links the PR."
+          echo "If this PR genuinely has no related issue, add the 'no-issue' label."
+          exit 1
+
   lint:
     name: lint
     runs-on: ubuntu-latest

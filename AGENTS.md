@@ -20,13 +20,31 @@ are allowed elsewhere via `import type`).
 
 # Collaboration rules
 
-This is a two-person repo (`ikkidev` + `modweck`). Agents working in
-this repo **must** follow these rules:
+This is a two-person repo (`ikkidev` + `modweck`), worked on from
+several workstations + agents. Agents working in this repo **must**
+follow these rules:
+
+## ⚠ MUST: Every PR links its issue
+
+**Every PR body MUST contain `Closes #N` (or `Fixes #N` / `Resolves #N`)
+on its own line.** This is what links the PR to the issue and to the
+sprint-board card. CI enforces it (`pr-link-check` job) — PRs without a
+linkage will fail and cannot merge.
+
+If the work genuinely has no tracking issue:
+1. **Prefer:** create the issue first (one-liner is fine), then link it.
+2. **Fallback:** add the `no-issue` label to the PR. Only acceptable for
+   repo-meta changes (README typo, CI tweak, etc.). Never for product code.
+
+**Why this is non-negotiable:** without `Closes #N` the sprint board
+card stays unlinked, reviewers can't see the spec, and a future agent
+on a different workstation has no way to reconstruct what the PR was for.
+
+## Other rules
 
 - **Never commit or push directly to `main`.** Always create a feature
   branch (`feat/`, `fix/`, `chore/`, or `docs/` prefix) and open a PR.
 - **One PR per logical change**, merged exactly once via squash-merge.
-- **Always link the related issue** in the PR body (`Closes #N`).
 - **Match the existing style** — don't reformat unrelated code.
 - **Run locally before pushing**: `npm run lint`, `npx tsc --noEmit`,
   `npm test`, `npm run build:web`. CI runs the same four checks; all must
