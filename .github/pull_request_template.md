@@ -6,7 +6,12 @@
 
 ## Why
 
-<!-- Why are we doing this? Link the issue: -->
+<!--
+REQUIRED: link the issue this PR closes. CI fails (`pr-link-check`) if
+no `Closes #N` / `Fixes #N` / `Resolves #N` is found below.
+If there's truly no related issue (rare — repo-meta only), add the
+`no-issue` label to the PR instead.
+-->
 
 Closes #
 

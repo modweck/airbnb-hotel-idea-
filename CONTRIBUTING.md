@@ -45,7 +45,7 @@ That's it. Never commit directly to `main`.
 |---|---|---|
 | New feature | `feat/` | `feat/per-person-budget` |
 | Bug fix | `fix/` | `fix/results-page-crash` |
-| Chore (deps, config, tooling) | `chore/` | `chore/upgrade-next` |
+| Chore (deps, config, tooling) | `chore/` | `chore/upgrade-expo` |
 | Docs only | `docs/` | `docs/contributing-cleanup` |
 
 Keep the description short, lowercase, hyphenated, English. If there's
@@ -190,13 +190,15 @@ each directory tree authenticates as the right user automatically. No
 ## Local development
 
 ```bash
+nvm use 20
 npm install
 cp .env.local.example .env.local
-# fill in Supabase + Apify keys
-npm run dev
+# fill in EXPO_PUBLIC_SUPABASE_*, ANTHROPIC_API_KEY, SERPAPI_KEY, etc.
+npm run web                 # web dev server (Metro)
+# or `npm run ios` / `npm run android`
 ```
 
-Open <http://localhost:3000>.
+Open <http://localhost:8081>.
 
 Before opening a PR, locally:
 
@@ -204,7 +206,7 @@ Before opening a PR, locally:
 npm run lint
 npx tsc --noEmit
 npm test
-npm run build
+npm run build:web
 ```
 
 All four must pass — CI runs the same commands.

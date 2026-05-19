@@ -1,16 +1,19 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "npx expo export --platform web"
+  publish = "dist/client"
+  functions = "netlify/functions"
 
-# Netlify auto-installs @netlify/plugin-nextjs for Next.js sites.
-# Pinning here makes the build deterministic if you change runtimes.
+[functions]
+  included_files = ["dist/server/**/*"]
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Expo Router server adapter handles all routes (static + /api/*) via one function.
+# Static assets in dist/client are served before this redirect matches.
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
 
-# Local dev with `netlify dev`
 [dev]
-  command = "npm run dev"
+  command = "npx expo start --web"
   port = 8888
-  targetPort = 3000
-  framework = "next"
+  targetPort = 8081

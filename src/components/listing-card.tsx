@@ -1,3 +1,4 @@
+import { Image, Linking, Pressable, Text, View } from "react-native";
 import type { Listing } from "@/lib/types";
 
 type DisplayMode = "total" | "per_person";
@@ -38,98 +39,120 @@ export function ListingCard({
     listing.location.walkMinutesToTown !== undefined
       ? `${listing.location.walkMinutesToTown} min walk`
       : listing.location.driveMinutesToTown !== undefined
-      ? `${listing.location.driveMinutesToTown} min drive`
-      : null;
+        ? `${listing.location.driveMinutesToTown} min drive`
+        : null;
+
+  const distancePart =
+    listing.distanceMi != null && listing.distanceTo
+      ? ` · ${listing.distanceMi} mi to ${listing.distanceTo.split(",")[0]}`
+      : "";
+
+  const subtitleLine =
+    `${listing.location.town}` +
+    (listing.location.region ? `, ${listing.location.region}` : "") +
+    (minutesLabel ? ` · ${minutesLabel}` : "") +
+    distancePart;
+
+  function openListing() {
+    Linking.openURL(listing.affiliateUrl ?? listing.url);
+  }
 
   return (
-    <article className="group flex overflow-hidden rounded-xl border border-zinc-200 bg-white transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="relative w-40 shrink-0 bg-zinc-100 dark:bg-zinc-800 sm:w-56">
+    <View className="flex-row overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <View className="relative w-40 shrink-0 bg-zinc-100 dark:bg-zinc-800 sm:w-56">
         {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photo}
+          <Image
+            source={{ uri: photo }}
             alt={listing.name}
-            className="h-full w-full object-cover"
+            accessibilityLabel={listing.name}
+            className="h-full w-full"
+            resizeMode="cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-            no photo
-          </div>
+          <View className="h-full items-center justify-center">
+            <Text className="text-xs text-zinc-400">no photo</Text>
+          </View>
         )}
         {overBudget && (
-          <span className="absolute left-2 top-2 rounded-full bg-amber-500/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow">
-            Slightly over budget
-          </span>
+          <View className="absolute left-2 top-2 rounded-full bg-amber-500/95 px-2 py-0.5 shadow">
+            <Text className="text-[10px] font-bold uppercase tracking-wider text-white">
+              Slightly over budget
+            </Text>
+          </View>
         )}
-        <span className="absolute right-2 top-2 rounded-full bg-zinc-900/90 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-          {listing.type}
-        </span>
+        <View className="absolute right-2 top-2 rounded-full bg-zinc-900/90 px-2 py-0.5">
+          <Text className="text-[10px] font-bold uppercase text-white">
+            {listing.type}
+          </Text>
+        </View>
         {listing.vibeTag && (
-          <span
-            className={`absolute left-2 ${overBudget ? "top-10" : "top-2"} rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white ${
+          <View
+            className={`absolute left-2 ${overBudget ? "top-10" : "top-2"} rounded-full px-2 py-0.5 ${
               listing.vibeTag === "lively"
                 ? "bg-emerald-600/90"
                 : listing.vibeTag === "moderate"
-                ? "bg-blue-500/90"
-                : "bg-zinc-500/90"
+                  ? "bg-blue-500/90"
+                  : "bg-zinc-500/90"
             }`}
           >
-            {listing.vibeTag}
-          </span>
+            <Text className="text-[10px] font-bold uppercase text-white">
+              {listing.vibeTag}
+            </Text>
+          </View>
         )}
-      </div>
+      </View>
 
-      <div className="flex flex-1 flex-col justify-between gap-2 p-4">
-        <div className="space-y-1">
-          <h3 className="text-base font-semibold leading-tight text-zinc-900 dark:text-zinc-100">
+      <View className="flex-1 justify-between gap-2 p-4">
+        <View className="space-y-1">
+          <Text
+            numberOfLines={2}
+            className="text-base font-semibold leading-tight text-zinc-900 dark:text-zinc-100"
+          >
             {listing.name}
-          </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {listing.location.town}
-            {listing.location.region ? `, ${listing.location.region}` : ""}
-            {minutesLabel ? ` · ${minutesLabel}` : ""}
-            {listing.distanceMi != null && listing.distanceTo && (
-              <> · {listing.distanceMi} mi to {listing.distanceTo.split(",")[0]}</>
-            )}
-          </p>
+          </Text>
+          <Text className="text-xs text-zinc-500 dark:text-zinc-400">
+            {subtitleLine}
+          </Text>
           {listing.type === "hotel" && listing.hotelRooms ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <Text className="text-xs text-zinc-500 dark:text-zinc-400">
               {listing.hotelRooms} room{listing.hotelRooms === 1 ? "" : "s"}
-              {" · 2 queen beds each"}
-              {" · "}
-              {formatUSD(listing.pricing.nightlyBase / listing.hotelRooms)}/room/night
+              {" · 2 queen beds each · "}
+              {formatUSD(listing.pricing.nightlyBase / listing.hotelRooms)}
+              /room/night
               {listing.hotelStars ? ` · ${listing.hotelStars}★` : ""}
-            </p>
+            </Text>
           ) : (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <Text className="text-xs text-zinc-500 dark:text-zinc-400">
               {listing.capacity.realBeds} real bed
               {listing.capacity.realBeds === 1 ? "" : "s"} ·{" "}
               {listing.bathrooms.full} bath
               {listing.bathrooms.full === 1 ? "" : "s"} · sleeps{" "}
               {listing.capacity.maxGuests}
-            </p>
+            </Text>
           )}
-        </div>
+        </View>
 
-        <div className="flex items-end justify-between">
-          <div className="leading-tight">
-            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+        <View className="flex-row items-end justify-between">
+          <View>
+            <Text className="text-lg font-bold leading-tight text-zinc-900 dark:text-zinc-100">
               {formatUSD(primary.amount)}
-            </div>
-            <div className="text-[11px] uppercase tracking-wider text-zinc-500">
+            </Text>
+            <Text className="text-[11px] uppercase tracking-wider text-zinc-500">
               {primary.label} · {formatUSD(secondary.amount)} {secondary.label}
-            </div>
-          </div>
-          <a
-            href={listing.affiliateUrl ?? listing.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+            </Text>
+          </View>
+          <Pressable
+            onPress={openListing}
+            accessibilityRole="link"
+            accessibilityLabel={`View ${listing.name}`}
+            className="rounded-md bg-zinc-900 px-3 py-1.5 dark:bg-white"
           >
-            View
-          </a>
-        </div>
-      </div>
-    </article>
+            <Text className="text-xs font-medium text-white dark:text-zinc-900">
+              View
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
   );
 }

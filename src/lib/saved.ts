@@ -1,7 +1,8 @@
-"use client";
+// Universal save system for listings — backed by kvStore (localStorage on web,
+// AsyncStorage on native). The public API is synchronous: mutations update an
+// in-memory mirror immediately and write through to kvStore in the background.
 
-// localStorage-based save system for listings
-// Saves persist on this browser/device only. No account needed.
+import { kvStore } from "./kv-store";
 
 const STORAGE_KEY = "saved_listings";
 
@@ -23,40 +24,33 @@ export interface SavedListing {
   savedAt: string;
 }
 
-function getAll(): SavedListing[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-// Cached snapshot so useSyncExternalStore consumers get a stable reference
-// between events (returning a fresh array each call would loop forever).
+let mem: SavedListing[] = [];
 let snapshotCache: SavedListing[] | null = null;
 const EMPTY: SavedListing[] = [];
+const listeners = new Set<() => void>();
 
-function setAll(listings: SavedListing[]) {
+async function hydrate() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+    const raw = await kvStore.getItem(STORAGE_KEY);
+    mem = raw ? (JSON.parse(raw) as SavedListing[]) : [];
   } catch {
-    /* storage full */
+    mem = [];
   }
   invalidate();
+}
+void hydrate();
+
+function persist() {
+  void kvStore.setItem(STORAGE_KEY, JSON.stringify(mem)).catch(() => {});
 }
 
 function invalidate() {
   snapshotCache = null;
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("saved-changed"));
-  }
+  listeners.forEach((l) => l());
 }
 
 export function getSavedListings(): SavedListing[] {
-  if (typeof window === "undefined") return EMPTY;
-  if (snapshotCache === null) snapshotCache = getAll();
+  if (snapshotCache === null) snapshotCache = [...mem];
   return snapshotCache;
 }
 
@@ -65,28 +59,27 @@ export function getSavedListingsServerSnapshot(): SavedListing[] {
 }
 
 export function subscribeSaved(callback: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("saved-changed", callback);
-  window.addEventListener("storage", callback);
+  listeners.add(callback);
   return () => {
-    window.removeEventListener("saved-changed", callback);
-    window.removeEventListener("storage", callback);
+    listeners.delete(callback);
   };
 }
 
 export function isSaved(id: string): boolean {
-  return getSavedListings().some((l) => l.id === id);
+  return mem.some((l) => l.id === id);
 }
 
 export function saveListing(listing: SavedListing) {
-  const all = getAll();
-  if (all.some((l) => l.id === listing.id)) return;
-  all.unshift({ ...listing, savedAt: new Date().toISOString() });
-  setAll(all);
+  if (mem.some((l) => l.id === listing.id)) return;
+  mem = [{ ...listing, savedAt: new Date().toISOString() }, ...mem];
+  persist();
+  invalidate();
 }
 
 export function unsaveListing(id: string) {
-  setAll(getAll().filter((l) => l.id !== id));
+  mem = mem.filter((l) => l.id !== id);
+  persist();
+  invalidate();
 }
 
 export function toggleSaved(listing: SavedListing): boolean {
@@ -99,5 +92,5 @@ export function toggleSaved(listing: SavedListing): boolean {
 }
 
 export function getSavedCount(): number {
-  return getAll().length;
+  return mem.length;
 }

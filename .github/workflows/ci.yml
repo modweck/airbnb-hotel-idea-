@@ -11,6 +11,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pr-link-check:
+    name: pr-link-check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Closes/Fixes/Resolves #N in PR body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          if echo "$PR_LABELS" | grep -q '"no-issue"'; then
+            echo "PR has 'no-issue' label — skipping linkage check."
+            exit 0
+          fi
+          if printf '%s' "$PR_BODY" | grep -Eiq '(closes|fixes|resolves)[[:space:]]+#[0-9]+'; then
+            echo "OK — PR body links an issue."
+            exit 0
+          fi
+          echo "ERROR: PR body must include 'Closes #N' (or Fixes/Resolves) so the issue auto-closes and the sprint-board card links the PR."
+          echo "If this PR genuinely has no related issue, add the 'no-issue' label."
+          exit 1
+
   lint:
     name: lint
     runs-on: ubuntu-latest
@@ -33,9 +55,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # Generate Next.js route types (PageProps<"/x">, etc.) into .next/types.
-      # tsconfig.json includes .next/types/**/*.ts, so tsc fails without this.
-      - run: npx next typegen
       - run: npx tsc --noEmit
 
   test:
@@ -54,10 +73,10 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     env:
-      # next build reads these at build time; provide harmless dummies
-      # so the build doesn't fail on missing secrets in PRs from forks.
-      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      # src/lib/supabase.ts throws at import time if these are missing;
+      # API routes are bundled by `expo export` so the build imports it.
+      EXPO_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
       SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
     steps:
       - uses: actions/checkout@v4
@@ -66,4 +85,4 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npx expo export --platform web
