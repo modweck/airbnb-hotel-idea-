@@ -48,3 +48,8 @@ spike/
 
 # Local Netlify folder
 .netlify
+
+# Expo prebuild output (managed workflow — regenerable via `npx expo prebuild`)
+/ios
+/android
+.expo/
