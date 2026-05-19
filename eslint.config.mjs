@@ -13,6 +13,34 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Enforce src/server/** as a server-only boundary. Only server-side code
+  // (API routes, Server Components, other server modules) may import from it.
+  {
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [
+          {
+            group: ["@/server/*", "@/server/*/*", "**/src/server/*"],
+            message:
+              "src/server/** is server-only. Import only from API routes (src/app/api/**), Server Components (page.tsx/layout.tsx), or other src/server modules.",
+          },
+        ],
+      }],
+    },
+  },
+  {
+    files: [
+      "src/app/api/**/*.ts",
+      "src/app/**/page.tsx",
+      "src/app/**/layout.tsx",
+      "src/server/**/*.ts",
+      // Post-Expo locations (Phase 6+):
+      "app/api/**/*.ts",
+      "app/**/+api.ts",
+    ],
+    rules: { "no-restricted-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;
+
