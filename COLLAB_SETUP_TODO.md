@@ -135,27 +135,29 @@ the guardrails are working.
 
 ---
 
-## 5. (Optional) GitHub Project v2 board
+## 5. GitHub Project v2 board — DONE
 
-If we want a shared kanban for issues:
+Board lives at https://github.com/users/ikkidev/projects/1
+("Trip Planner — Sprint Board"). 28 issues seeded, lane-split so
+ikkidev (Expo port) and modweck (product + vibe-code) don't collide.
+See `docs/modweck-onboarding.md` for the working agreement.
 
-1. https://github.com/users/modweck/projects → **New project** →
-   **Board**.
-2. Name: `airbnb-hotel-idea`.
-3. Add columns: `Backlog`, `In progress`, `In review`, `Done`.
-4. Link the repo: project **Settings** → **Manage access** → add
-   `modweck/airbnb-hotel-idea-` with **Write** access.
-5. In the repo, configure issue auto-add: project **Settings** →
-   **Workflows** → enable **Item added to project** when an issue is
-   opened.
+Still TODO (modweck-only, requires admin/owner access):
+
+1. **Accept the project invite** so you can see the board on your end.
+   ikkidev sends invite from project Settings → Manage access.
+2. **Link the project to this repo** so it shows under the repo's
+   Projects tab:
+   - Open the board → **Settings** (top-right `...`) → **Manage access**
+   - Add `modweck/airbnb-hotel-idea-` with **Write** access.
 
 ---
 
 ## Quick checklist
 
-- [ ] PR #3 merged
+- [x] PR #3 merged
 - [ ] `main` branch protection ruleset active (PR required, 4 checks
-      required, force-push blocked)
-- [ ] ikkidev added as Write collaborator
-- [ ] modweck completed a practice PR end-to-end
-- [ ] (optional) Project v2 board created
+      required, force-push blocked) — see issue #30
+- [ ] ikkidev added as Write collaborator — see issue #31
+- [ ] modweck completed a practice PR end-to-end — see issue #32
+- [x] Project v2 board created — https://github.com/users/ikkidev/projects/1
