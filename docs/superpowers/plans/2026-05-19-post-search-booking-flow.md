@@ -9,15 +9,32 @@ chosen. All references go through a single constant
 
 ## Status (as of 2026-05-19)
 
-All 45 tasks below are now **live GitHub issues** (#40–#84) on the
+All 45 tasks below are now **live GitHub issues** (#40–#85) on the
 sprint board (`PVT_kwHOAEjqkc4BYH9J`). Milestones M1–M4 created. See
 the **Issue map** section at the bottom for the full mapping.
 
+**Parallelisation model.** The dependency graph was originally too
+strict — `[MODWECK_OK]` UI work appeared to be blocked behind
+`[IKKI_ONLY]` server work. It isn't, in practice:
+
+- The only **hard** prerequisite for any UI task is **#85** (TS types
+  + fixtures + design tokens). That's an ~hour of ikki's time. Once
+  it merges, every `[MODWECK_OK]` task across M1, M2, and M3 is
+  unblocked.
+- The "Blocked by API" / "Blocked by migration" relationships on UI
+  issues are **soft** — UI ships against fixtures, integration PRs
+  follow. Each affected issue now lists Hard vs Soft dependencies in
+  its body.
+- M2 work can start as soon as #85 is merged. M2 does NOT wait for
+  M1 to finish. **#52 (Travelpayouts application) is an external
+  action, not a code gate.**
+
 **For an agent picking this up:** Browse the sprint board (filter by
-milestone M1, status Todo, owner=you) and pick the lowest-numbered
-unblocked issue. Each issue's body includes the description, the
-`[IKKI_ONLY]` / `[MODWECK_OK]` tag, full acceptance criteria, and any
-"Blocked by" dependency links.
+milestone, status Todo, owner=you) and pick the lowest-numbered
+unblocked issue. "Unblocked" means all **Hard** dependencies in the
+body are merged. Each issue body has the description, the
+`[IKKI_ONLY]` / `[MODWECK_OK]` tag, acceptance criteria, and
+Hard/Soft dependencies.
 
 Implementation of any task happens off the board, one PR per issue.
 
@@ -217,6 +234,7 @@ outbound listing click already tagged with our Travelpayouts marker.
 
 Tasks (executed in roughly this order):
 
+0. `[IKKI_ONLY]` **(#85, the unblock task)** Define `src/lib/trip-types.ts` + `src/__fixtures__/{trip-board,listing-detail}.ts` + `src/lib/theme.ts` design tokens. **Once this merges, all `[MODWECK_OK]` UI tasks in M1/M2/M3 are unblocked and can be picked up in parallel.**
 1. `[IKKI_ONLY]` Sign up for Travelpayouts; record `marker` + base URL
    in `.env.local.example`. Note: nothing here ships in code, just
    account setup.
@@ -231,7 +249,7 @@ Tasks (executed in roughly this order):
 10. `[MODWECK_OK]` "Add to Trip" affordance in `app/results.tsx` (button per result) + small modal/sheet "create new trip OR add to existing". UI only; calls existing trip API.
 11. `[IKKI_ONLY]` Wire CTA "VIEW LISTING" buttons to rewritten URLs. Confirm in browser devtools that the outbound URL goes through Travelpayouts.
 12. `[IKKI_ONLY]` Smoke test on iOS sim (`Linking.openURL` opens provider in mobile Safari with tag intact).
-13. `[IKKI_ONLY]` Apply to Travelpayouts. **This is the gate.** Don't start M2 until the application is submitted.
+13. `[IKKI_ONLY]` Apply to Travelpayouts. **External action, not a code gate** — M2 starts in parallel as soon as #85 lands.
 
 ### M2 — Group decision
 
@@ -332,6 +350,7 @@ Tasks (these can be parallelised with M3 if needed):
 | # | Task | Owner | Size |
 |---|---|---|---|
 | | **M1 Foundation** | | |
+| [#85](https://github.com/modweck/airbnb-hotel-idea-/issues/85) | `m1-types-fixtures` **(unblock)** | ikkidev | S |
 | [#40](https://github.com/modweck/airbnb-hotel-idea-/issues/40) | `m1-travelpayouts-signup` | ikkidev | S |
 | [#41](https://github.com/modweck/airbnb-hotel-idea-/issues/41) | `m1-brand-constant` | ikkidev | S |
 | [#42](https://github.com/modweck/airbnb-hotel-idea-/issues/42) | `m1-affiliate-rewriter` | ikkidev | M |
