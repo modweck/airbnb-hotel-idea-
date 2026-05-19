@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { SortableListings } from "@/components/sortable-listings";
-import { applyBudgetFilter, type BudgetInput } from "@/lib/budget";
-import { getListingProvider } from "@/lib/listing-provider";
-import type { Listing } from "@/lib/types";
-import { geocodePlace, distanceMiles } from "@/lib/geocode";
-import { findNightlifeHotspots, applyVibeToListings } from "@/lib/vibe";
+import { searchTrip, type SearchTripInput } from "@/server/search/pipeline";
 
 type SearchParams = {
   location?: string;
@@ -58,63 +54,39 @@ export default async function ResultsPage(props: PageProps<"/results">) {
   const vibes = sp.vibes?.split(",").filter(Boolean) ?? [];
   const distanceTo = sp.distanceTo ?? "";
 
-  const provider = getListingProvider();
-  let listings: Listing[] = [];
-  let error: string | null = null;
-  const needsLiveQuery = provider.name !== "seed";
-  const hasRequiredParams = !needsLiveQuery || (!!location && !!checkIn && !!checkOut);
-
-  if (hasRequiredParams) {
-    try {
-      listings = await provider.fetch({
-        location,
-        checkIn,
-        checkOut,
-        groupSize,
-        pairs,
-        stayType,
-        minBedrooms: minBeds,
-        minBathrooms,
-      });
-    } catch (err) {
-      error = err instanceof Error ? err.message : "Search failed";
-    }
-  }
-
-  // Geocode "distance to" target and calculate miles from each listing
-  if (distanceTo && listings.length > 0) {
-    const target = await geocodePlace(distanceTo);
-    if (target) {
-      for (const l of listings) {
-        if (l.location.lat != null && l.location.lng != null) {
-          l.distanceMi = Math.round(
-            distanceMiles(target, { lat: l.location.lat, lng: l.location.lng }) * 10
-          ) / 10;
-          l.distanceTo = distanceTo;
-        }
-      }
-    }
-  }
-
-  // Tag listings with vibe (lively/moderate/quiet) based on nightlife proximity
-  if (location && listings.length > 0) {
-    const hotspots = await findNightlifeHotspots(location);
-    applyVibeToListings(listings, hotspots);
-  }
-
-  // Filter by vibe if user selected one
-  const vibeMap: Record<string, string> = { lively: "lively", chill: "moderate", adventure: "quiet" };
-  const selectedVibe = vibes.length > 0 ? vibeMap[vibes[0]] : null;
-  if (selectedVibe) {
-    listings = listings.filter((l) => l.vibeTag === selectedVibe);
-  }
-
-  const budgetInput: BudgetInput = { budgetMin, budgetMax, budgetMode };
-  const { matched, overflow } = applyBudgetFilter(
-    listings,
-    budgetInput,
+  const input: SearchTripInput = {
+    location,
+    checkIn,
+    checkOut,
     groupSize,
-  );
+    pairs,
+    stayType,
+    minBeds,
+    minBathrooms,
+    budgetMin,
+    budgetMax,
+    budgetMode,
+    vibes,
+    distanceTo: distanceTo || undefined,
+  };
+
+  let matched: Awaited<ReturnType<typeof searchTrip>>["matched"] = [];
+  let overflow: Awaited<ReturnType<typeof searchTrip>>["overflow"] = [];
+  let meta: Awaited<ReturnType<typeof searchTrip>>["meta"] | null = null;
+  let error: string | null = null;
+
+  try {
+    const result = await searchTrip(input);
+    matched = result.matched;
+    overflow = result.overflow;
+    meta = result.meta;
+  } catch (err) {
+    error = err instanceof Error ? err.message : "Search failed";
+  }
+
+  const needsLiveQuery = meta?.needsLiveQuery ?? true;
+  const hasRequiredParams = meta?.hasRequiredParams ?? false;
+  const providerName = meta?.providerName ?? "unknown";
   const totalShown = matched.length + overflow.length;
 
   return (
@@ -148,7 +120,7 @@ export default async function ResultsPage(props: PageProps<"/results">) {
           {vibes.length > 0 && ` · ${vibes.join(", ")}`}
         </p>
         <p className="text-[11px] uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
-          source: {provider.name}
+          source: {providerName}
         </p>
       </header>
 
