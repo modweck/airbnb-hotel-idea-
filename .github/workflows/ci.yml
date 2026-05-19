@@ -33,9 +33,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # Generate Next.js route types (PageProps<"/x">, etc.) into .next/types.
-      # tsconfig.json includes .next/types/**/*.ts, so tsc fails without this.
-      - run: npx next typegen
       - run: npx tsc --noEmit
 
   test:
@@ -54,10 +51,10 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     env:
-      # next build reads these at build time; provide harmless dummies
-      # so the build doesn't fail on missing secrets in PRs from forks.
-      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      # src/lib/supabase.ts throws at import time if these are missing;
+      # API routes are bundled by `expo export` so the build imports it.
+      EXPO_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
       SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
     steps:
       - uses: actions/checkout@v4
@@ -66,4 +63,4 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npx expo export --platform web

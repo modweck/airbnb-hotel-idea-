@@ -30,8 +30,8 @@ jobs:
     name: verify build
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      EXPO_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
       SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
     steps:
       - uses: actions/checkout@v4
@@ -41,10 +41,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm test
-      - run: npm run build
+      - run: npx expo export --platform web
 
   deploy-web:
     name: deploy to Netlify
