@@ -6,21 +6,31 @@ Not another search engine. A **decision engine**.
 
 ## Stack
 
-- **Next.js 16** + TypeScript + Tailwind v4 (App Router)
-- **Supabase** — Postgres + auth
-- **Apify** — VRBO + Booking.com scrapers
+- **Expo SDK 55** + Expo Router (universal iOS / Android / web from one tree)
+- **React Native** + react-native-web, **NativeWind 4** on **Tailwind v3**
+- **TypeScript**, **Vitest** for pure-logic tests
+- **Supabase** — Postgres + auth (universal client via `src/lib/supabase.ts`)
+- **Apify** + **SerpAPI** — VRBO / Booking.com scrapers and search providers
+- **Anthropic Claude** — natural-language trip parsing on `/api/parse-trip`
+- **Netlify** + `expo-server/adapter/netlify` for the web build; native runs in
+  Expo Go (sim) and EAS Build (release)
 - Affiliate links (Awin / Expedia Group) for monetization
 
 ## Getting started
 
 ```bash
+nvm use 20                  # Node 20+
 npm install
 cp .env.local.example .env.local
-# fill in Supabase + Apify keys
-npm run dev
+# fill in EXPO_PUBLIC_SUPABASE_*, SUPABASE_SERVICE_ROLE_KEY,
+# ANTHROPIC_API_KEY, SERPAPI_KEY, GOOGLE_PLACES_API_KEY
+npm run web                 # web dev server (Metro)
+# or:
+npm run ios                 # iOS simulator (Mac only)
+npm run android             # Android emulator
 ```
 
-Open http://localhost:3000.
+Open <http://localhost:8081>.
 
 ## Supabase setup
 
@@ -31,20 +41,31 @@ Open http://localhost:3000.
 ## Project layout
 
 ```
+app/                          — Expo Router file-based routes
+  _layout.tsx                 — root layout (Stack + SafeAreaProvider)
+  index.tsx                   — home (hero + trip form)
+  results.tsx                 — ranked listings (fetches /api/search)
+  saved.tsx, about.tsx, …     — static + bookmarked pages
+  api/
+    health+api.ts             — health check
+    search+api.ts             — thin handler over src/server/search/pipeline
+    parse-trip+api.ts         — Claude trip parser
+    places-autocomplete+api.ts — Google Places autocomplete
 src/
-  app/
-    page.tsx           — home with trip input form
-    results/page.tsx   — ranked listings (skeleton; pipeline TBD)
   components/
-    trip-form.tsx      — the trip input form
+    trip-form/                — split form (hook + sections + orchestrator)
+    listing-card.tsx, sortable-listings.tsx, save-button.tsx,
+    place-autocomplete.tsx
+  client/                     — universal client wrappers (apiBase, search,
+                                parse-trip, places)
   lib/
-    types.ts           — unified Listing / TripInput / HardFilters types
-    supabase/
-      client.ts        — browser Supabase client
-      server.ts        — server Supabase client (RSC, Server Actions)
-      proxy.ts         — session refresh helper for proxy.ts
-proxy.ts               — Next.js 16 proxy (was middleware) for auth
-db/schema.sql          — Postgres schema for Supabase
+    supabase.ts               — universal Supabase client
+    kv-store.{ts,web,native}  — universal key-value adapter
+    saved.ts, types.ts, …
+  server/
+    search/pipeline.ts        — server-only ranking pipeline
+netlify.toml                  — Expo server adapter config
+netlify/functions/server.ts   — `expo-server/adapter/netlify` entry
 ```
 
 ## Roadmap (21 features)

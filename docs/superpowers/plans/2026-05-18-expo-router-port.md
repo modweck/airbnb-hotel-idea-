@@ -28,9 +28,9 @@
 | 8 | Port shared helpers (`saved.ts`, analytics, types) | Done |
 | 9 | Port remaining components | **Done** (`place-autocomplete`, `listing-card`, `save-button`, `sortable-listings`, `trip-form/**` all RN) |
 | 10 | Port pages | **Done** (`index`, `results`, `saved`, `about`, `contact`, `privacy`, `terms`) |
-| 11 | Delete Next.js | **Not started** (next dependency cleanup + `src/app/` removal) |
+| 11 | Delete Next.js | **Done** (deleted `src/app/`, `src/lib/supabase/`, `next.config.ts`, `proxy.ts`, `postcss.config.mjs`, stale `public/*.svg`; uninstalled `next`, `eslint-config-next`, `@tailwindcss/postcss`; replaced ESLint config with `eslint-config-expo`) |
 | 12 | Update CI | **Done** (`ci.yml` + `release.yml` rewritten for Expo; Netlify build hook in `release.yml`) |
-| 13 | Docs (incl. `docs/mobile-handoff.md`) | In progress (handoff kept current) |
+| 13 | Docs (incl. `docs/mobile-handoff.md`) | **Done** (`README.md`, `AGENTS.md`, `CONTRIBUTING.md` updated for Expo; `docs/mobile-handoff.md` created) |
 | 14 | Spike 5 — iOS sim smoke (on MacBook Pro) | Not started (MBP) |
 
 > **Pragmatic rule for UI rewrites:** several tasks involve porting components I cannot fully predict line-by-line (Expo + paper.design output is exploratory). For those tasks, the plan specifies the **contract** (RN primitives to use, props/behavior to preserve, validation criteria). Treat them as TDD-by-smoke-test: render the screen with `npx expo start --web`, exercise the behavior, confirm no console errors and visual parity with main.

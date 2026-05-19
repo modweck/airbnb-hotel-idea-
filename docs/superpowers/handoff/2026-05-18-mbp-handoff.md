@@ -41,9 +41,9 @@ cp .env.local.example .env.local
 | 8 — Shared helpers | Done | `saved.ts` → kvStore. Analytics already guarded by `typeof window`. |
 | 9 — Component ports | **Done** | `place-autocomplete`, `listing-card`, `save-button`, `sortable-listings`, and the trip-form bundle are all RN. |
 | 10 — Top-level pages | **Done** | `app/index.tsx` (home with hero + form), `app/results.tsx` (client-side `searchTripApi`), `app/saved.tsx` (`useSyncExternalStore`), and `app/{about,contact,privacy,terms}.tsx`. |
-| 11 — Delete Next | **Not started** | Wait until iOS sim confirms the port doesn't regress on native — see priority 2 below. |
+| 11 — Delete Next | **Done** | `src/app/`, `src/lib/supabase/`, `next.config.ts`, `proxy.ts`, `postcss.config.mjs`, `public/*.svg` all deleted. Removed deps: `next`, `eslint-config-next`, `@tailwindcss/postcss`. ESLint config now uses `eslint-config-expo`. |
 | 12 — Web build verification | **Done** | `ci.yml` (lint/typecheck/test/expo export) and `release.yml` (verify → Netlify build hook → GitHub Release) both Expo-shaped with no Next references. Netlify preview deploy verified. |
-| 13 — Lint & types | Done | tsc + eslint + Vitest all green. |
+| 13 — Lint & types | **Done** | tsc + eslint + Vitest all green. `README.md`, `AGENTS.md`, `CONTRIBUTING.md` updated for Expo; `docs/mobile-handoff.md` created. |
 | 14 — Native build smoke | **Not started** | iOS sim + EAS Build. **This is the main MBP task.** |
 
 ## What works today
