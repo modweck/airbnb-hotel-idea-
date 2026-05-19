@@ -94,10 +94,6 @@ export default function ResultsPage() {
       distanceTo: distanceTo || undefined,
     };
 
-    // Fetching on URL change is the canonical effect use-case — the lint rule
-    // flags the synchronous setState but there's no external sync state to
-    // derive loading from without bigger machinery (SWR/Query).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     searchTripApi(input)

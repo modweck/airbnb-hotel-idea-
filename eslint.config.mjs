@@ -1,26 +1,21 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import expoConfig from "eslint-config-expo/flat.js";
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
+  ...expoConfig,
   globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    // Spike scratch + Expo build output + CJS config files
-    "spike/**",
+    // Build / scratch output
     "dist/**",
+    ".expo/**",
+    "spike/**",
+    // CJS config files Expo ships at root
     "tailwind.config.js",
     "babel.config.js",
     "metro.config.js",
   ]),
   // Enforce src/server/** as a server-only boundary. Only server-side code
-  // (API routes, Server Components, other server modules) may import from it.
+  // (API routes, other server modules) may import from it. Type-only
+  // imports are allowed so the universal client can share type signatures.
   {
     rules: {
       "no-restricted-imports": ["error", {
@@ -28,7 +23,7 @@ const eslintConfig = defineConfig([
           {
             group: ["@/server/*", "@/server/*/*", "**/src/server/*"],
             message:
-              "src/server/** is server-only. Import only from API routes (src/app/api/**), Server Components (page.tsx/layout.tsx), or other src/server modules.",
+              "src/server/** is server-only. Import only from API routes (app/api/**+api.ts) or other src/server modules.",
             allowTypeImports: true,
           },
         ],
@@ -37,13 +32,9 @@ const eslintConfig = defineConfig([
   },
   {
     files: [
-      "src/app/api/**/*.ts",
-      "src/app/**/page.tsx",
-      "src/app/**/layout.tsx",
-      "src/server/**/*.ts",
-      // Post-Expo locations (Phase 6+):
       "app/api/**/*.ts",
       "app/**/+api.ts",
+      "src/server/**/*.ts",
     ],
     rules: { "no-restricted-imports": "off" },
   },
