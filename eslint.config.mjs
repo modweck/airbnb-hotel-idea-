@@ -29,6 +29,7 @@ const eslintConfig = defineConfig([
             group: ["@/server/*", "@/server/*/*", "**/src/server/*"],
             message:
               "src/server/** is server-only. Import only from API routes (src/app/api/**), Server Components (page.tsx/layout.tsx), or other src/server modules.",
+            allowTypeImports: true,
           },
         ],
       }],
