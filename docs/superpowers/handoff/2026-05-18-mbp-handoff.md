@@ -28,7 +28,7 @@ cp .env.local.example .env.local
 
 | Phase | Status | Notes |
 |------|--------|-------|
-| 1 — Spike 1 (Netlify server adapter) | Partial | Local `expo export` works. Root `netlify.toml` + `netlify/functions/server.ts` committed and re-verified on WSL 2026-05-19. Real Netlify deploy still TODO (see below). |
+| 1 — Spike 1 (Netlify server adapter) | **Done** | Deployed to `https://trip-planner-expo-test.netlify.app` on 2026-05-19 (ikkidev personal). `/api/health` 200, SSR works. See `docs/superpowers/notes/2026-05-18-spike1-netlify-server-adapter.md` for verified versions + the `NETLIFY_NEXT_PLUGIN_SKIP=true` gotcha. `docs/modweck-netlify-handoff.md` is the runbook for modweck's Netlify site. |
 | 2 — `searchTrip()` extraction | Done | `src/server/search/pipeline.ts` + 3 Vitest tests. |
 | 3.1 — Expo Router scaffold | Done | NativeWind 4 + Tailwind v3 + react-native-css-interop. See `docs/superpowers/notes/2026-05-18-nativewind-fallback.md` for the version matrix + the `app.json` `extra.router.root` knob (critical). |
 | 3.2 — Port `trip-form.tsx` | **Skipped** | 37KB UI rewrite. Needs Paper.design screenshots + iOS simulator side-by-side. Do this on MBP. |

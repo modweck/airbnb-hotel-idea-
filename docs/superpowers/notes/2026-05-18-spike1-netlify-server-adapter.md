@@ -1,9 +1,50 @@
-# Spike 1 — Expo server adapter on Netlify (partial result)
+# Spike 1 — Expo server adapter on Netlify (DONE)
 
-**Status:** Local build smoke ✅. Netlify deploy verification ⏳ (blocked on
-WSL — needs to be run from the MacBook Pro with `netlify` CLI logged in).
+**Status:** Local build ✅, Netlify deploy ✅. Phase 1 complete.
 
 **Date:** 2026-05-19
+
+## Verified deploy
+
+- Site: `https://trip-planner-expo-test.netlify.app` (ikkidev personal Netlify, team "Miracle Coder")
+- `/api/health` → `{"status":"ok","ts":1779212275840}` HTTP 200
+- `/` → SSR'd Expo Router HTML, NativeWind styles present
+- `/api/places-autocomplete?q=lisb` → 200, returns `[]` without GOOGLE_PLACES_API_KEY (graceful, no crash)
+
+**Verified versions** (Node 20.20.2 on macOS arm64, lockfile regenerated locally — see "Cross-platform lockfile" below):
+
+```
+expo:           ^55.0.25
+expo-router:    ^55.0.15
+expo-server:    ^55.0.10
+react-native:   ^0.85.3
+react-native-web: ^0.21.2
+```
+
+No `expo-server`/`expo` major-version skew (both on `55` now — earlier note about `expo-server@55` vs `expo@54` is obsolete).
+
+## One non-obvious gotcha that bit on first deploy
+
+Netlify auto-detects Next.js from `next.config.ts` and auto-installs
+`@netlify/plugin-nextjs`. The plugin then errors with "Your publish
+directory does not contain expected Next.js build output." Fix: set
+the env var `NETLIFY_NEXT_PLUGIN_SKIP=true` on the Netlify site
+before the first deploy. This goes away when `next.config.ts` is
+deleted in Phase 11.
+
+## Cross-platform lockfile
+
+The WSL-generated `package-lock.json` (committed at HEAD) works on
+Linux (Netlify's build infra) but Metro's resolver chokes on it from
+macOS arm64 — `react-native-screens` and `expo-asset` become unresolvable
+even though the files are at the top level of `node_modules`. Fix on
+MBP: `rm package-lock.json node_modules && npm install` regenerates a
+working lockfile locally. **Do NOT commit the macOS lockfile** — would
+likely break Netlify's Linux build. The two lockfiles aren't reconciled
+yet; consider a real fix (npm workspaces? CI-only lockfile? committed
+deterministic lockfile that works cross-platform?) before Phase 11.
+
+## Original WSL-side notes follow below
 
 ## What was verified on WSL
 
