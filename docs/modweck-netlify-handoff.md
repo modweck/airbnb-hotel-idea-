@@ -102,15 +102,3 @@ curl -s "$SITE/api/places-autocomplete?q=lisb"
 curl -s -X POST "$SITE/api/parse-trip" -H 'content-type: application/json' \
   -d '{"text":"weekend in Lisbon for 2"}'
 ```
-
-## Still-pending repo hygiene (your side)
-
-Per `COLLAB_SETUP_TODO.md` and issues #30 / #31:
-
-- [ ] Enable branch protection on `main` (require PR review, no direct
-      pushes). Blocking proper PR review of this branch.
-- [ ] Add `ikkidev` as Write collaborator on the repo. Currently can't
-      open PRs against `main` for review without this.
-
-Worth doing before merging this branch so the next ones go through a
-proper review gate.
