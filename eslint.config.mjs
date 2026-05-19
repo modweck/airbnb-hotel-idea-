@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Spike scratch + Expo build output + CJS config files
+    "spike/**",
+    "dist/**",
+    "tailwind.config.js",
+    "babel.config.js",
+    "metro.config.js",
   ]),
   // Enforce src/server/** as a server-only boundary. Only server-side code
   // (API routes, Server Components, other server modules) may import from it.
