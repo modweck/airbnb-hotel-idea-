@@ -28,7 +28,7 @@ cp .env.local.example .env.local
 
 | Phase | Status | Notes |
 |------|--------|-------|
-| 1 — Spike 1 (Netlify server adapter) | Partial | Local `expo export` works. Real Netlify deploy still TODO (see below). |
+| 1 — Spike 1 (Netlify server adapter) | Partial | Local `expo export` works. Root `netlify.toml` + `netlify/functions/server.ts` committed and re-verified on WSL 2026-05-19. Real Netlify deploy still TODO (see below). |
 | 2 — `searchTrip()` extraction | Done | `src/server/search/pipeline.ts` + 3 Vitest tests. |
 | 3.1 — Expo Router scaffold | Done | NativeWind 4 + Tailwind v3 + react-native-css-interop. See `docs/superpowers/notes/2026-05-18-nativewind-fallback.md` for the version matrix + the `app.json` `extra.router.root` knob (critical). |
 | 3.2 — Port `trip-form.tsx` | **Skipped** | 37KB UI rewrite. Needs Paper.design screenshots + iOS simulator side-by-side. Do this on MBP. |
@@ -65,27 +65,37 @@ v4 in a throwaway branch — don't bother fixing on `feat/ios-mobile-port`.
 
 ### 1. Finish Phase 1 — Netlify deploy
 
-Steps from the spike notes (`docs/superpowers/notes/2026-05-18-spike1-netlify-server-adapter.md`):
-
-```bash
-cd spike/netlify-probe
-npm install
-npx netlify init                                 # ikkidev personal account
-npx netlify deploy --build --prod
-curl https://<site>.netlify.app/api/health       # expect {"status":"ok",...}
-```
-
-If the spike succeeds, repeat against the **root** project (not the spike dir)
-to deploy the real app:
+**Spike step skipped — deploy the root app directly.** Local `expo export`
+already proved Metro can bundle server output, so the probe adds no value.
+The root `netlify.toml` and `netlify/functions/server.ts` are committed
+and a clean `npx expo export --platform web` was verified on WSL
+(2026-05-19) — produces `dist/client/` + 4 bundled API routes under
+`dist/server/_expo/functions/api/`.
 
 ```bash
 cd /path/to/repo
-npx expo export --platform web
-npx netlify deploy --dir=dist/client --functions=dist/server --prod
+git switch feat/ios-mobile-port && git pull
+nvm use 20 && npm install
+
+netlify login                       # one-time, opens browser
+netlify init                        # ikkidev personal account, new site
+netlify deploy --build              # preview build on Netlify
+curl https://<preview>.netlify.app/api/health
+# expect: {"status":"ok","ts":...}
+
+# If preview passes:
+netlify deploy --build --prod
 ```
 
 Capture the production URL and put it in `.env.local` as
 `EXPO_PUBLIC_API_BASE_URL` (needed for the native build to reach `/api/*`).
+
+**If the Netlify build fails**, fall back to the spike to isolate
+root-app config vs. adapter issues. Recreate it from
+`docs/superpowers/notes/2026-05-18-spike1-netlify-server-adapter.md`
+(lines 12-20 are the exact scaffold; the working `netlify.toml` and
+`netlify/functions/server.ts` are inline in that doc). `spike/` is
+gitignored — it never travels between machines.
 
 ### 2. iOS simulator smoke (Phase 14 minimal)
 
