@@ -1,23 +1,19 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "npx expo export --platform web"
+  publish = "dist/client"
+  functions = "netlify/functions"
 
-# Skip deploy-preview builds while feat/ios-mobile-port is in flight.
-# Next build is intentionally broken on that branch (Tailwind v3↔v4 mismatch
-# during NativeWind migration). Real Netlify config switches to Expo export
-# in Phase 1 on the MBP. Drop this block once main builds Expo.
-[context.deploy-preview]
-  ignore = "exit 0"
+[functions]
+  included_files = ["dist/server/**/*"]
 
-# Netlify auto-installs @netlify/plugin-nextjs for Next.js sites.
-# Pinning here makes the build deterministic if you change runtimes.
+# Expo Router server adapter handles all routes (static + /api/*) via one function.
+# Static assets in dist/client are served before this redirect matches.
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-# Local dev with `netlify dev`
 [dev]
-  command = "npm run dev"
+  command = "npx expo start --web"
   port = 8888
-  targetPort = 3000
-  framework = "next"
+  targetPort = 8081
