@@ -142,10 +142,6 @@ Follow the plan strictly. The key sequencing rule: don't delete `src/app/`
   the repo (different owners — modweck owns the repo). modweck has to link
   from his side via the repo Projects UI.
 
-- **Branch protection / collaborator:** Issues #30 and #31 track modweck
-  enabling branch protection on `main` and adding `ikkidev` as Write
-  collaborator. Bug him to do this — currently PRs go in unreviewed.
-
 - **PR #33** (cofounder onboarding doc) is open against `main`. Can be merged
   any time. Independent of the Expo work.
 

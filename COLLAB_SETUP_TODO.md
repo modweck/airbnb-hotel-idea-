@@ -153,9 +153,9 @@ If we want a shared kanban for issues:
 
 ## Quick checklist
 
-- [ ] PR #3 merged
-- [ ] `main` branch protection ruleset active (PR required, 4 checks
+- [x] PR #3 merged
+- [x] `main` branch protection ruleset active (PR required, 4 checks
       required, force-push blocked)
-- [ ] ikkidev added as Write collaborator
-- [ ] modweck completed a practice PR end-to-end
-- [ ] (optional) Project v2 board created
+- [x] ikkidev added as Write collaborator
+- [x] modweck completed a practice PR end-to-end (PR #4)
+- [x] Project v2 board created (https://github.com/users/ikkidev/projects/1)
