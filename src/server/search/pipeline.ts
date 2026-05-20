@@ -2,6 +2,7 @@ import { getListingProvider } from "@/lib/listing-provider";
 import { geocodePlace, distanceMiles } from "@/lib/geocode";
 import { findNightlifeHotspots, applyVibeToListings } from "@/lib/vibe";
 import { applyBudgetFilter, type BudgetInput } from "@/lib/budget";
+import { tryRewriteOutboundUrl } from "@/lib/affiliate";
 import type { Listing } from "@/lib/types";
 
 export interface SearchTripInput {
@@ -120,6 +121,17 @@ export async function searchTrip(
     input.groupSize,
   );
 
+  // Affiliate-tag every surviving listing with an anonymous click ID so
+  // CTAs work for users who haven't created a trip yet. UI re-rewrites with
+  // the real trip-scoped click ID at click time (#50). We populate
+  // Listing.affiliateUrl rather than overwriting Listing.url because the
+  // rewriter is idempotent on already-wrapped URLs by design; overwriting
+  // url would prevent the per-click re-rewrite from ever applying a real
+  // click_id.
+  for (const l of [...matched, ...overflow]) {
+    tagListingWithAffiliate(l);
+  }
+
   return {
     matched,
     overflow,
@@ -132,4 +144,14 @@ export async function searchTrip(
       needsLiveQuery,
     },
   };
+}
+
+function tagListingWithAffiliate(listing: Listing): void {
+  if (!listing.url) return;
+  const result = tryRewriteOutboundUrl(listing.url, {
+    clickId: `none:anon:${listing.id}`,
+  });
+  if (result.wrapped) {
+    listing.affiliateUrl = result.url;
+  }
 }
