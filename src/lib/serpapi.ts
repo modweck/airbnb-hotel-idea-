@@ -154,6 +154,8 @@ function serpPropertyToListing(
     url: prop.link ?? "",
     name: prop.name ?? "Unnamed Property",
     hotelStars: prop.hotel_class,
+    guestRating: prop.overall_rating,
+    reviewCount: prop.reviews,
     description: prop.description,
     photos: (prop.images ?? [])
       .map((img) => img.original_image ?? img.thumbnail ?? "")
@@ -224,7 +226,8 @@ export async function searchListings(params: {
   minBedrooms?: number;
   minBathrooms?: number;
   stayType?: "houses" | "hotels" | "both";
-  minStars?: number;
+  /** Specific hotel star classes to include (e.g. [4, 5]). Empty/undefined = any. */
+  stars?: number[];
 }): Promise<SearchResults> {
   const {
     location,
@@ -237,7 +240,7 @@ export async function searchListings(params: {
     minBedrooms,
     minBathrooms,
     stayType = "both",
-    minStars,
+    stars,
   } = params;
 
   // Calculate nights for per-person math
@@ -288,7 +291,11 @@ export async function searchListings(params: {
         vacationRentals: false,
       }).then((res) => {
         results.hotels = (res.properties ?? [])
-          .filter((p) => !minStars || (p.hotel_class ?? 0) >= minStars)
+          .filter((p) =>
+            !stars || stars.length === 0
+              ? true
+              : stars.includes(p.hotel_class ?? 0),
+          )
           .map((p) => {
             const listing = serpPropertyToListing(p, false, groupSize, nights);
             // Multiply hotel price by number of rooms needed

@@ -14,7 +14,8 @@ export type Priority = "value" | "location" | "vibe" | "overall";
 export type StayType = "houses" | "hotels" | "both";
 export type BudgetMode = "total" | "per_person";
 export type PeoplePerRoom = 2 | 4;
-export type MinStars = number | "";
+/** Specific hotel star classes the user opted into. Empty = any. */
+export type SelectedStars = number[];
 
 export function useTripForm() {
   const router = useRouter();
@@ -43,7 +44,12 @@ export function useTripForm() {
   const [minBeds, setMinBeds] = useState<number | "">("");
   const [distanceTo, setDistanceTo] = useState("");
   const [stayType, setStayType] = useState<StayType>("both");
-  const [minStars, setMinStars] = useState<MinStars>("");
+  const [selectedStars, setSelectedStars] = useState<SelectedStars>([]);
+  function toggleStar(star: number) {
+    setSelectedStars((prev) =>
+      prev.includes(star) ? prev.filter((s) => s !== star) : [...prev, star].sort(),
+    );
+  }
   const [peoplePerRoom, setPeoplePerRoom] = useState<PeoplePerRoom>(4);
   const [priority, setPriority] = useState<Priority>("value");
   const [vibes, setVibes] = useState<Vibe[]>([]);
@@ -214,7 +220,8 @@ export function useTripForm() {
     if (budgetMin !== "" || budgetMax !== "")
       params.set("budgetMode", budgetMode);
     if (vibes.length) params.set("vibes", vibes.join(","));
-    if (minStars !== "") params.set("minStars", String(minStars));
+    if (selectedStars.length > 0)
+      params.set("stars", selectedStars.join(","));
     params.set("peoplePerRoom", String(peoplePerRoom));
     if (distanceTo.trim()) params.set("distanceTo", distanceTo.trim());
     params.set("filters", encodeURIComponent(JSON.stringify(filters)));
@@ -264,7 +271,7 @@ export function useTripForm() {
     stayType, setStayType,
 
     // Hotel-specific
-    minStars, setMinStars,
+    selectedStars, toggleStar,
     peoplePerRoom, setPeoplePerRoom,
 
     // Priority & vibe

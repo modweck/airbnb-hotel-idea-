@@ -121,7 +121,18 @@ export function ListingCard({
               /room/night
               {listing.hotelStars ? ` · ${listing.hotelStars}★` : ""}
             </Text>
-          ) : (
+          ) : null}
+          {(listing.guestRating != null || listing.reviewCount != null) && (
+            <Text className="text-xs text-zinc-500 dark:text-zinc-400">
+              {listing.guestRating != null
+                ? `★ ${listing.guestRating.toFixed(1)}`
+                : "★ —"}
+              {listing.reviewCount != null
+                ? ` (${listing.reviewCount.toLocaleString("en-US")} reviews)`
+                : ""}
+            </Text>
+          )}
+          {!(listing.type === "hotel" && listing.hotelRooms) && (
             <Text className="text-xs text-zinc-500 dark:text-zinc-400">
               {listing.capacity.realBeds} real bed
               {listing.capacity.realBeds === 1 ? "" : "s"} ·{" "}

@@ -19,8 +19,13 @@ function sortListings(listings: Listing[], sort: SortOption): Listing[] {
       return sorted.sort(
         (a, b) => (a.distanceMi ?? 9999) - (b.distanceMi ?? 9999),
       );
-    case "rating":
-      return sorted.sort((a, b) => (b.hotelStars ?? 0) - (a.hotelStars ?? 0));
+    case "rating": {
+      // Prefer real guest rating (0–5); fall back to hotel class for listings
+      // where SerpAPI didn't return a user score.
+      const score = (l: Listing): number =>
+        l.guestRating ?? l.hotelStars ?? 0;
+      return sorted.sort((a, b) => score(b) - score(a));
+    }
     case "vibe":
       return sorted.sort(
         (a, b) =>

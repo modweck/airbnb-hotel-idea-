@@ -56,6 +56,10 @@ export default function ResultsPage() {
   const priority = getString(params.priority) || "value";
   const vibes = getString(params.vibes).split(",").filter(Boolean);
   const distanceTo = getString(params.distanceTo);
+  const stars = getString(params.stars)
+    .split(",")
+    .map((s) => parseInt(s, 10))
+    .filter((n) => Number.isFinite(n) && n > 0);
 
   const [data, setData] = useState<SearchTripResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +80,7 @@ export default function ResultsPage() {
     budgetMode,
     vibes,
     distanceTo,
+    stars,
   });
 
   useEffect(() => {
@@ -94,6 +99,7 @@ export default function ResultsPage() {
       budgetMode,
       vibes,
       distanceTo: distanceTo || undefined,
+      stars: stars.length > 0 ? stars : undefined,
     };
 
     setLoading(true);
@@ -141,6 +147,7 @@ export default function ResultsPage() {
       ? ` · $${budgetMin ?? "0"}–${budgetMax ?? "∞"} ${budgetModeLabel}`
       : "") +
     (stayType !== "both" ? ` · ${stayType} only` : "") +
+    (stars.length > 0 ? ` · ${stars.join(", ")}★ only` : "") +
     ` · sorted by ${priority}` +
     (vibes.length > 0 ? ` · ${vibes.join(", ")}` : "");
 
