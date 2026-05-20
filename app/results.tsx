@@ -9,6 +9,7 @@ import {
 import { Link, useLocalSearchParams } from "expo-router";
 import { SortableListings } from "@/components/sortable-listings";
 import { searchTripApi } from "@/client/search";
+import { nightsBetween } from "@/lib/duration";
 import type {
   SearchTripInput,
   SearchTripResult,
@@ -122,6 +123,8 @@ export default function ResultsPage() {
   const providerName = meta?.providerName ?? "unknown";
   const totalShown = matched.length + overflow.length;
 
+  const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
+
   const summaryLine =
     (groupSize > 0 ? `${groupSize} people` : "") +
     (flexible
@@ -129,7 +132,7 @@ export default function ResultsPage() {
           flexMonths.length ? ` in ${flexMonths.join(", ")}` : ""
         }${flexWeekend ? " · weekend" : ""}`
       : checkIn && checkOut
-        ? ` · ${checkIn} → ${checkOut}`
+        ? ` · ${checkIn} → ${checkOut} · ${nights} night${nights === 1 ? "" : "s"}`
         : "") +
     (pairs > 0 ? ` · ${pairs} pair${pairs === 1 ? "" : "s"} sharing` : "") +
     (minBeds ? ` · ${minBeds}+ beds` : "") +

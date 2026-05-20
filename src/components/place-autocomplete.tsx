@@ -20,8 +20,15 @@ export function PlaceAutocomplete({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // After picking a suggestion the value updates to the full place name —
+  // skip the next fetch so the dropdown doesn't reopen.
+  const skipNextFetchRef = useRef(false);
 
   useEffect(() => {
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false;
+      return;
+    }
     if (value.length < 2) {
       return;
     }
@@ -43,13 +50,14 @@ export function PlaceAutocomplete({
   }, [value]);
 
   function selectSuggestion(s: string) {
+    skipNextFetchRef.current = true;
     onChange(s);
     setOpen(false);
     setSuggestions([]);
   }
 
   return (
-    <View className="relative">
+    <View className="relative" style={open ? { zIndex: 9999 } : undefined}>
       <TextInput
         placeholder={placeholder}
         value={value}
@@ -67,11 +75,14 @@ export function PlaceAutocomplete({
         className={className}
       />
       {open && suggestions.length > 0 && (
-        <View className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+        <View
+          className="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+          style={{ zIndex: 9999 }}
+        >
           {suggestions.map((s) => (
             <Pressable
               key={s}
-              onPress={() => selectSuggestion(s)}
+              onPressIn={() => selectSuggestion(s)}
               className="px-4 py-2.5 active:bg-zinc-100 hover:bg-zinc-50 dark:active:bg-zinc-800 dark:hover:bg-zinc-800/50"
             >
               <Text className="text-sm text-zinc-900 dark:text-zinc-100">{s}</Text>
