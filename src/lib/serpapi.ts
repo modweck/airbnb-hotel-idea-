@@ -210,6 +210,19 @@ function isValidListing(l: Listing): boolean {
   return true;
 }
 
+/**
+ * Multi-select hotel-class filter. Empty/undefined `stars` means "any".
+ * A non-empty filter only admits hotels whose class is in the set; hotels
+ * with a missing `hotel_class` (treated as 0) are excluded.
+ */
+export function matchesStarsFilter(
+  hotelClass: number | undefined,
+  stars: number[] | undefined,
+): boolean {
+  if (!stars || stars.length === 0) return true;
+  return stars.includes(hotelClass ?? 0);
+}
+
 export interface SearchResults {
   houses: Listing[];
   hotels: Listing[];
@@ -291,11 +304,7 @@ export async function searchListings(params: {
         vacationRentals: false,
       }).then((res) => {
         results.hotels = (res.properties ?? [])
-          .filter((p) =>
-            !stars || stars.length === 0
-              ? true
-              : stars.includes(p.hotel_class ?? 0),
-          )
+          .filter((p) => matchesStarsFilter(p.hotel_class, stars))
           .map((p) => {
             const listing = serpPropertyToListing(p, false, groupSize, nights);
             // Multiply hotel price by number of rooms needed
