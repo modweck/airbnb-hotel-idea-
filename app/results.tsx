@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
+import { Footer } from "@/components/footer";
 import { SortableListings } from "@/components/sortable-listings";
 import { searchTripApi } from "@/client/search";
 import { nightsBetween } from "@/lib/duration";
@@ -144,11 +145,9 @@ export default function ResultsPage() {
     (vibes.length > 0 ? ` · ${vibes.join(", ")}` : "");
 
   return (
-    <ScrollView
-      className="flex-1 bg-white dark:bg-zinc-950"
-      contentContainerClassName="mx-auto w-full max-w-3xl px-6 py-10"
-    >
-      <Link href={"/" as never} asChild>
+    <ScrollView className="flex-1 bg-white dark:bg-zinc-950">
+      <View className="mx-auto w-full max-w-3xl px-6 py-10">
+        <Link href={"/" as never} asChild>
         <Pressable className="mb-6">
           <Text className="text-sm text-zinc-600 dark:text-zinc-400">
             ← New search
@@ -213,6 +212,8 @@ export default function ResultsPage() {
             hasDistance={!!distanceTo}
           />
         ))}
+      </View>
+      <Footer />
     </ScrollView>
   );
 }
