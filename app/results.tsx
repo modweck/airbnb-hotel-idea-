@@ -10,6 +10,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { Footer } from "@/components/footer";
 import { SortableListings } from "@/components/sortable-listings";
 import { searchTripApi } from "@/client/search";
+import { formatMoney } from "@/lib/currency";
 import { nightsBetween } from "@/lib/duration";
 import type {
   SearchTripInput,
@@ -138,7 +139,7 @@ export default function ResultsPage() {
     (pairs > 0 ? ` · ${pairs} pair${pairs === 1 ? "" : "s"} sharing` : "") +
     (minBeds ? ` · ${minBeds}+ beds` : "") +
     (budgetMin !== undefined || budgetMax !== undefined
-      ? ` · $${budgetMin ?? "0"}–${budgetMax ?? "∞"} ${budgetModeLabel}`
+      ? ` · ${formatMoney(budgetMin ?? 0)}–${budgetMax !== undefined ? formatMoney(budgetMax) : "∞"} ${budgetModeLabel}`
       : "") +
     (stayType !== "both" ? ` · ${stayType} only` : "") +
     ` · sorted by ${priority}` +
