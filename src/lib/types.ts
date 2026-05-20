@@ -100,8 +100,10 @@ export interface Listing {
   affiliateUrl?: string;
 
   name: string;
-  hotelStars?: number;  // 1-5 star rating for hotels
-  hotelRooms?: number;  // number of rooms needed for the group
+  hotelStars?: number;     // 1-5 hotel class (e.g. "4-star hotel")
+  hotelRooms?: number;     // number of rooms needed for the group
+  guestRating?: number;    // average user review score (0–5)
+  reviewCount?: number;    // number of user reviews
   description?: string;
   photos: string[];
 

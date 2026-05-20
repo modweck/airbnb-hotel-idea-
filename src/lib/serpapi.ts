@@ -154,6 +154,8 @@ function serpPropertyToListing(
     url: prop.link ?? "",
     name: prop.name ?? "Unnamed Property",
     hotelStars: prop.hotel_class,
+    guestRating: prop.overall_rating,
+    reviewCount: prop.reviews,
     description: prop.description,
     photos: (prop.images ?? [])
       .map((img) => img.original_image ?? img.thumbnail ?? "")
@@ -210,6 +212,19 @@ function isValidListing(l: Listing): boolean {
   return true;
 }
 
+/**
+ * Multi-select hotel-class filter. Empty/undefined `stars` means "any".
+ * A non-empty filter only admits hotels whose class is in the set; hotels
+ * with a missing `hotel_class` (treated as 0) are excluded.
+ */
+export function matchesStarsFilter(
+  hotelClass: number | undefined,
+  stars: number[] | undefined,
+): boolean {
+  if (!stars || stars.length === 0) return true;
+  return stars.includes(hotelClass ?? 0);
+}
+
 export interface SearchResults {
   houses: Listing[];
   hotels: Listing[];
@@ -226,7 +241,8 @@ export async function searchListings(params: {
   minBedrooms?: number;
   minBathrooms?: number;
   stayType?: "houses" | "hotels" | "both";
-  minStars?: number;
+  /** Specific hotel star classes to include (e.g. [4, 5]). Empty/undefined = any. */
+  stars?: number[];
 }): Promise<SearchResults> {
   const {
     location,
@@ -239,7 +255,7 @@ export async function searchListings(params: {
     minBedrooms,
     minBathrooms,
     stayType = "both",
-    minStars,
+    stars,
   } = params;
 
   // Calculate nights for per-person math
@@ -290,7 +306,7 @@ export async function searchListings(params: {
         vacationRentals: false,
       }).then((res) => {
         results.hotels = (res.properties ?? [])
-          .filter((p) => !minStars || (p.hotel_class ?? 0) >= minStars)
+          .filter((p) => matchesStarsFilter(p.hotel_class, stars))
           .map((p) => {
             const listing = serpPropertyToListing(p, false, groupSize, nights);
             // Multiply hotel price by number of rooms needed

@@ -16,6 +16,8 @@ export interface ListingQuery {
   stayType?: "houses" | "hotels" | "both";
   minBedrooms?: number;
   minBathrooms?: number;
+  /** Specific hotel star classes to include (e.g. [4, 5]). Empty/undefined = any. */
+  stars?: number[];
 }
 
 export interface ListingProvider {
@@ -43,6 +45,7 @@ export const serpapiProvider: ListingProvider = {
       minBedrooms: q.minBedrooms,
       minBathrooms: q.minBathrooms,
       stayType: q.stayType ?? "both",
+      stars: q.stars,
     });
     return [...results.houses, ...results.hotels];
   },
