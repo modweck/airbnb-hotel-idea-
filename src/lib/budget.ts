@@ -97,6 +97,7 @@ export function applyBudgetFilter(
     return { matched: [...listings].sort(sortByCost), overflow: [] };
   }
 
+  // totalMin enforcement happens per-listing inside listingMatchesBudget below.
   const matched: Listing[] = [];
   const candidateOverflow: Listing[] = [];
 
