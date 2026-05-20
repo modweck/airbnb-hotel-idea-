@@ -203,6 +203,8 @@ function serpPropertyToListing(
 /** Drop listings with missing/broken data that SerpAPI sometimes returns */
 function isValidListing(l: Listing): boolean {
   if (l.url === "" || l.pricing.totalForStay <= 0) return false;
+  // No photo → looks empty / untrustworthy on the card; drop it.
+  if (l.photos.length === 0) return false;
   // Hotels don't report bedrooms/maxGuests — only filter those for houses
   if (l.type === "house" && (l.capacity.bedrooms <= 0 || l.capacity.maxGuests <= 0)) return false;
   return true;

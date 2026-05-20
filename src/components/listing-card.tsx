@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import type { Listing } from "@/lib/types";
 
@@ -38,6 +39,10 @@ export function ListingCard({
       : { amount: perPerson, label: "per person" };
 
   const photo = listing.photos[0];
+  // Bail out if SerpAPI gave us a URL that won't load — we don't want to
+  // render a card with a grey placeholder where the image should be.
+  const [imageBroken, setImageBroken] = useState(false);
+  if (!photo || imageBroken) return null;
   const minutesLabel =
     listing.location.walkMinutesToTown !== undefined
       ? `${listing.location.walkMinutesToTown} min walk`
@@ -63,19 +68,14 @@ export function ListingCard({
   return (
     <View className="flex-row overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
       <View className="relative w-40 shrink-0 bg-zinc-100 dark:bg-zinc-800 sm:w-56">
-        {photo ? (
-          <Image
-            source={{ uri: photo }}
-            alt={listing.name}
-            accessibilityLabel={listing.name}
-            className="h-full w-full"
-            resizeMode="cover"
-          />
-        ) : (
-          <View className="h-full items-center justify-center">
-            <Text className="text-xs text-zinc-400">no photo</Text>
-          </View>
-        )}
+        <Image
+          source={{ uri: photo }}
+          alt={listing.name}
+          accessibilityLabel={listing.name}
+          onError={() => setImageBroken(true)}
+          className="h-full w-full"
+          resizeMode="cover"
+        />
         {overBudget && (
           <View className="absolute left-2 top-2 rounded-full bg-amber-500/95 px-2 py-0.5 shadow">
             <Text className="text-[10px] font-bold uppercase tracking-wider text-white">
