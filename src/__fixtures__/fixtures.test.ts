@@ -35,11 +35,9 @@ describe("trip-board fixture", () => {
     }
   });
 
-  it("members have unique ids and unique tokens", () => {
+  it("members have unique ids", () => {
     const ids = membersFixture.map((m) => m.id);
-    const tokens = membersFixture.map((m) => m.memberToken);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(tokens).size).toBe(tokens.length);
   });
 
   it("every TripListing belongs to the trip and was added by a known member", () => {

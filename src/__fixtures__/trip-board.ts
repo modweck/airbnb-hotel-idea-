@@ -46,7 +46,6 @@ export const membersFixture: TripMember[] = [
   {
     id: "member_ikki",
     tripId: TRIP_ID,
-    memberToken: "tok_ikki_3a9e",
     userId: null,
     displayName: "Ikki",
     email: "ikki@example.com",
@@ -56,7 +55,6 @@ export const membersFixture: TripMember[] = [
   {
     id: "member_maurice",
     tripId: TRIP_ID,
-    memberToken: "tok_maurice_b7d2",
     userId: null,
     displayName: "Maurice",
     email: null,
@@ -66,7 +64,6 @@ export const membersFixture: TripMember[] = [
   {
     id: "member_jordan",
     tripId: TRIP_ID,
-    memberToken: "tok_jordan_4f1c",
     userId: null,
     displayName: "Jordan",
     email: null,
@@ -76,7 +73,6 @@ export const membersFixture: TripMember[] = [
   {
     id: "member_priya",
     tripId: TRIP_ID,
-    memberToken: "tok_priya_9e62",
     userId: null,
     displayName: "Priya",
     email: null,
@@ -86,7 +82,6 @@ export const membersFixture: TripMember[] = [
   {
     id: "member_sofia",
     tripId: TRIP_ID,
-    memberToken: "tok_sofia_2c81",
     userId: null,
     displayName: "Sofia",
     email: null,

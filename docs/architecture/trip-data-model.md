@@ -208,7 +208,7 @@ happen on both sides simultaneously.
 | TS interface       | SQL table        | Notes |
 |--------------------|------------------|-------|
 | `Trip`             | `trips`          | `slug` is the public share-link key. |
-| `TripMember`       | `trip_members`   | `memberToken` (anon cookie) is the v1 auth primitive; `userId` lands with #74. |
+| `TripMember`       | `trip_members`   | The cookie-bound `member_token` is sha256-hashed into `member_token_hash` server-side; clients never see it and the TS `TripMember` contract therefore omits it. `userId` lands with #74. |
 | `TripListing`      | `trip_listings`  | `listingSnapshot` is `jsonb`, frozen at add time. |
 | `Vote`             | `votes`          | PK = (`trip_listing_id`, `trip_member_id`). |
 | `Comment`          | `comments`       | M2 surface. |
