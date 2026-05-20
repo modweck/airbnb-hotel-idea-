@@ -139,7 +139,13 @@ export default function ResultsPage() {
     (pairs > 0 ? ` · ${pairs} pair${pairs === 1 ? "" : "s"} sharing` : "") +
     (minBeds ? ` · ${minBeds}+ beds` : "") +
     (budgetMin !== undefined || budgetMax !== undefined
-      ? ` · ${formatMoney(budgetMin ?? 0)}–${budgetMax !== undefined ? formatMoney(budgetMax) : "∞"} ${budgetModeLabel}`
+      ? ` · ${
+          budgetMin !== undefined && budgetMax !== undefined
+            ? `${formatMoney(budgetMin)}–${formatMoney(budgetMax)}`
+            : budgetMax !== undefined
+              ? `under ${formatMoney(budgetMax)}`
+              : `${formatMoney(budgetMin!)}+`
+        } ${budgetModeLabel}`
       : "") +
     (stayType !== "both" ? ` · ${stayType} only` : "") +
     ` · sorted by ${priority}` +
