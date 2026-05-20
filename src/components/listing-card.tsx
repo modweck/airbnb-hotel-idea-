@@ -16,11 +16,14 @@ export function ListingCard({
   groupSize,
   budgetMode,
   overBudget = false,
+  onAddToTrip,
 }: {
   listing: Listing;
   groupSize: number;
   budgetMode: DisplayMode;
   overBudget?: boolean;
+  /** When provided, an "Add to Trip" button appears next to View. */
+  onAddToTrip?: (listing: Listing) => void;
 }) {
   const { totalForStay } = listing.pricing;
   const perPerson = groupSize > 0 ? totalForStay / groupSize : totalForStay;
@@ -141,16 +144,30 @@ export function ListingCard({
               {primary.label} · {formatUSD(secondary.amount)} {secondary.label}
             </Text>
           </View>
-          <Pressable
-            onPress={openListing}
-            accessibilityRole="link"
-            accessibilityLabel={`View ${listing.name}`}
-            className="rounded-md bg-zinc-900 px-3 py-1.5 dark:bg-white"
-          >
-            <Text className="text-xs font-medium text-white dark:text-zinc-900">
-              View
-            </Text>
-          </Pressable>
+          <View className="flex-row gap-2">
+            {onAddToTrip && (
+              <Pressable
+                onPress={() => onAddToTrip(listing)}
+                accessibilityRole="button"
+                accessibilityLabel={`Add ${listing.name} to a trip`}
+                className="rounded-md border border-zinc-300 px-3 py-1.5 dark:border-zinc-700"
+              >
+                <Text className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                  + Add to Trip
+                </Text>
+              </Pressable>
+            )}
+            <Pressable
+              onPress={openListing}
+              accessibilityRole="link"
+              accessibilityLabel={`View ${listing.name}`}
+              className="rounded-md bg-zinc-900 px-3 py-1.5 dark:bg-white"
+            >
+              <Text className="text-xs font-medium text-white dark:text-zinc-900">
+                View
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </View>
