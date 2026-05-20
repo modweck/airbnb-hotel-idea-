@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { DateInput } from "@/components/date-input";
 import { PlaceAutocomplete } from "@/components/place-autocomplete";
 import {
   Checkbox,
@@ -44,7 +45,7 @@ export function WhereWhen({ form }: { form: TripFormState }) {
             </Pressable>
           </Link>
         </View>
-        <View>
+        <View style={{ zIndex: 20 }}>
           <Text className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
             Location
           </Text>
@@ -56,7 +57,7 @@ export function WhereWhen({ form }: { form: TripFormState }) {
           />
         </View>
 
-        <View>
+        <View style={{ zIndex: 10 }}>
           <Text className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
             Distance to (optional)
           </Text>
@@ -117,12 +118,9 @@ export function WhereWhen({ form }: { form: TripFormState }) {
               <Text className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 Check-in
               </Text>
-              <TextInput
+              <DateInput
                 value={checkIn}
-                onChangeText={setCheckIn}
-                placeholder="YYYY-MM-DD"
-                autoCapitalize="none"
-                autoCorrect={false}
+                onChange={setCheckIn}
                 className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base dark:border-zinc-700 dark:bg-zinc-900"
               />
             </View>
@@ -130,12 +128,9 @@ export function WhereWhen({ form }: { form: TripFormState }) {
               <Text className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 Check-out
               </Text>
-              <TextInput
+              <DateInput
                 value={checkOut}
-                onChangeText={setCheckOut}
-                placeholder="YYYY-MM-DD"
-                autoCapitalize="none"
-                autoCorrect={false}
+                onChange={setCheckOut}
                 className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base dark:border-zinc-700 dark:bg-zinc-900"
               />
             </View>
