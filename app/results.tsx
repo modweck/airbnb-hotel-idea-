@@ -11,6 +11,7 @@ import { AddToTripModal } from "@/components/add-to-trip-modal";
 import { Footer } from "@/components/footer";
 import { SortableListings } from "@/components/sortable-listings";
 import { searchTripApi } from "@/client/search";
+import { formatMoney } from "@/lib/currency";
 import { nightsBetween } from "@/lib/duration";
 import { tripFixture } from "@/__fixtures__/trip-board";
 import type { Listing } from "@/lib/types";
@@ -173,7 +174,13 @@ export default function ResultsPage() {
     (pairs > 0 ? ` · ${pairs} pair${pairs === 1 ? "" : "s"} sharing` : "") +
     (minBeds ? ` · ${minBeds}+ beds` : "") +
     (budgetMin !== undefined || budgetMax !== undefined
-      ? ` · $${budgetMin ?? "0"}–${budgetMax ?? "∞"} ${budgetModeLabel}`
+      ? ` · ${
+          budgetMin !== undefined && budgetMax !== undefined
+            ? `${formatMoney(budgetMin)}–${formatMoney(budgetMax)}`
+            : budgetMax !== undefined
+              ? `under ${formatMoney(budgetMax)}`
+              : `${formatMoney(budgetMin!)}+`
+        } ${budgetModeLabel}`
       : "") +
     (stayType !== "both" ? ` · ${stayType} only` : "") +
     (stars.length > 0 ? ` · ${stars.join(", ")}★ only` : "") +

@@ -125,6 +125,7 @@ export function WhoBudget({ form }: { form: TripFormState }) {
               className="flex-1 bg-transparent py-3 text-base"
             />
             <Text className="text-zinc-400">–</Text>
+            <Text className="text-sm text-zinc-400">$</Text>
             <TextInput
               keyboardType="number-pad"
               placeholder="Max"
