@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,11 +7,15 @@ import {
   View,
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
+import { AddToTripModal } from "@/components/add-to-trip-modal";
 import { Footer } from "@/components/footer";
 import { SortableListings } from "@/components/sortable-listings";
 import { searchTripApi } from "@/client/search";
 import { formatMoney } from "@/lib/currency";
 import { nightsBetween } from "@/lib/duration";
+import { tripFixture } from "@/__fixtures__/trip-board";
+import type { Listing } from "@/lib/types";
+import type { Trip } from "@/lib/trip-types";
 import type {
   SearchTripInput,
   SearchTripResult,
@@ -57,6 +61,10 @@ export default function ResultsPage() {
   const priority = getString(params.priority) || "value";
   const vibes = getString(params.vibes).split(",").filter(Boolean);
   const distanceTo = getString(params.distanceTo);
+  const stars = getString(params.stars)
+    .split(",")
+    .map((s) => parseInt(s, 10))
+    .filter((n) => Number.isFinite(n) && n > 0);
 
   const [data, setData] = useState<SearchTripResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +85,7 @@ export default function ResultsPage() {
     budgetMode,
     vibes,
     distanceTo,
+    stars,
   });
 
   useEffect(() => {
@@ -95,6 +104,7 @@ export default function ResultsPage() {
       budgetMode,
       vibes,
       distanceTo: distanceTo || undefined,
+      stars: stars.length > 0 ? stars : undefined,
     };
 
     setLoading(true);
@@ -125,6 +135,31 @@ export default function ResultsPage() {
   const providerName = meta?.providerName ?? "unknown";
   const totalShown = matched.length + overflow.length;
 
+  // Add-to-Trip modal state. Backed by an in-memory list while #45 trip-store
+  // is pending; replace `existingTrips` with the real store once it lands.
+  const [addTarget, setAddTarget] = useState<Listing | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const existingTrips: Trip[] = [tripFixture];
+
+  // Clear any in-flight toast timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  function handleAddToTrip(listing: Listing) {
+    setAddTarget(listing);
+  }
+
+  function handleAdded(trip: Trip, mode: "created" | "appended") {
+    const verb = mode === "created" ? "Created" : "Added to";
+    setToast(`${verb} ${trip.title}`);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000);
+  }
+
   const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
 
   const summaryLine =
@@ -148,11 +183,13 @@ export default function ResultsPage() {
         } ${budgetModeLabel}`
       : "") +
     (stayType !== "both" ? ` · ${stayType} only` : "") +
+    (stars.length > 0 ? ` · ${stars.join(", ")}★ only` : "") +
     ` · sorted by ${priority}` +
     (vibes.length > 0 ? ` · ${vibes.join(", ")}` : "");
 
   return (
-    <ScrollView className="flex-1 bg-white dark:bg-zinc-950">
+    <View className="flex-1 bg-white dark:bg-zinc-950">
+      <ScrollView className="flex-1">
       <View className="mx-auto w-full max-w-3xl px-6 py-10">
         <Link href={"/" as never} asChild>
         <Pressable className="mb-6">
@@ -217,11 +254,33 @@ export default function ResultsPage() {
             groupSize={groupSize}
             budgetMode={budgetMode}
             hasDistance={!!distanceTo}
+            onAddToTrip={handleAddToTrip}
           />
         ))}
       </View>
       <Footer />
-    </ScrollView>
+      </ScrollView>
+
+      <AddToTripModal
+        visible={addTarget !== null}
+        listing={addTarget}
+        existingTrips={existingTrips}
+        onClose={() => setAddTarget(null)}
+        onAdded={handleAdded}
+      />
+
+      {toast && (
+        <View
+          accessibilityLiveRegion="polite"
+          className="absolute bottom-8 left-0 right-0 items-center"
+          pointerEvents="none"
+        >
+          <View className="rounded-lg bg-zinc-900 px-4 py-3 shadow-lg dark:bg-zinc-700">
+            <Text className="text-sm font-medium text-white">{toast}</Text>
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
 

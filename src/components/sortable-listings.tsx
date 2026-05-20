@@ -2,32 +2,9 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import type { Listing } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
+import { sortListings, type SortOption } from "@/lib/listing-sort";
 
-type SortOption = "price" | "distance" | "rating" | "vibe";
 type DisplayMode = "total" | "per_person";
-
-const VIBE_ORDER = { lively: 0, moderate: 1, quiet: 2 } as const;
-
-function sortListings(listings: Listing[], sort: SortOption): Listing[] {
-  const sorted = [...listings];
-  switch (sort) {
-    case "price":
-      return sorted.sort(
-        (a, b) => a.pricing.totalForStay - b.pricing.totalForStay,
-      );
-    case "distance":
-      return sorted.sort(
-        (a, b) => (a.distanceMi ?? 9999) - (b.distanceMi ?? 9999),
-      );
-    case "rating":
-      return sorted.sort((a, b) => (b.hotelStars ?? 0) - (a.hotelStars ?? 0));
-    case "vibe":
-      return sorted.sort(
-        (a, b) =>
-          VIBE_ORDER[a.vibeTag ?? "quiet"] - VIBE_ORDER[b.vibeTag ?? "quiet"],
-      );
-  }
-}
 
 export function SortableListings({
   matched,
@@ -35,12 +12,14 @@ export function SortableListings({
   groupSize,
   budgetMode,
   hasDistance,
+  onAddToTrip,
 }: {
   matched: Listing[];
   overflow: Listing[];
   groupSize: number;
   budgetMode: DisplayMode;
   hasDistance: boolean;
+  onAddToTrip?: (listing: Listing) => void;
 }) {
   const [sort, setSort] = useState<SortOption>("price");
 
@@ -100,6 +79,7 @@ export function SortableListings({
                 listing={l}
                 groupSize={groupSize}
                 budgetMode={budgetMode}
+                onAddToTrip={onAddToTrip}
               />
             ))}
           </View>
@@ -119,6 +99,7 @@ export function SortableListings({
                 groupSize={groupSize}
                 budgetMode={budgetMode}
                 overBudget
+                onAddToTrip={onAddToTrip}
               />
             ))}
           </View>

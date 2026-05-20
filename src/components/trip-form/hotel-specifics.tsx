@@ -4,7 +4,7 @@ import type { TripFormState } from "@/components/trip-form/use-trip-form";
 export function HotelSpecifics({ form }: { form: TripFormState }) {
   const {
     stayType,
-    minStars, setMinStars,
+    selectedStars, toggleStar,
     peoplePerRoom, setPeoplePerRoom,
   } = form;
 
@@ -15,23 +15,18 @@ export function HotelSpecifics({ form }: { form: TripFormState }) {
         <View className="flex-row gap-3">
           <View className="flex-1">
             <Text className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              Min star rating
+              Star rating
             </Text>
             <View className="flex-row flex-wrap gap-1.5">
-              {(
-                [
-                  { val: "" as const, label: "Any" },
-                  { val: 2 as const, label: "2+" },
-                  { val: 3 as const, label: "3+" },
-                  { val: 4 as const, label: "4+" },
-                  { val: 5 as const, label: "5" },
-                ]
-              ).map((opt) => {
-                const active = minStars === opt.val;
+              {([1, 2, 3, 4, 5] as const).map((star) => {
+                const active = selectedStars.includes(star);
                 return (
                   <Pressable
-                    key={String(opt.val)}
-                    onPress={() => setMinStars(opt.val)}
+                    key={star}
+                    onPress={() => toggleStar(star)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${star} star${star === 1 ? "" : "s"}`}
+                    accessibilityState={{ selected: active }}
                     className={`rounded-md border px-3 py-2 ${
                       active
                         ? "border-zinc-900 bg-zinc-900 dark:border-white dark:bg-white"
@@ -45,12 +40,17 @@ export function HotelSpecifics({ form }: { form: TripFormState }) {
                           : "text-zinc-700 dark:text-zinc-300"
                       }`}
                     >
-                      {opt.label}
+                      {star}★
                     </Text>
                   </Pressable>
                 );
               })}
             </View>
+            <Text className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+              {selectedStars.length === 0
+                ? "Any rating"
+                : `Only ${selectedStars.join(", ")}★`}
+            </Text>
           </View>
           <View className="flex-1">
             <Text className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">

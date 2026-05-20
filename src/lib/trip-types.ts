@@ -29,12 +29,14 @@ export interface Trip {
 
 /**
  * A participant in a Trip. In v1 they're anonymous, identified by a
- * `memberToken` cookie. `userId` lands once Supabase Auth is in (#74).
+ * cookie-bound `member_token` whose sha256 hash is stored server-side
+ * as `trip_members.member_token_hash`. The raw token never leaves the
+ * client; this contract therefore omits it entirely. `userId` lands
+ * once Supabase Auth is in (#74).
  */
 export interface TripMember {
   id: string;
   tripId: string;
-  memberToken: string;
   userId: string | null;
   displayName: string;
   email: string | null;

@@ -18,6 +18,8 @@ export interface SearchTripInput {
   budgetMode: "total" | "per_person";
   vibes: string[];
   distanceTo?: string;
+  /** Specific hotel star classes to include (e.g. [4, 5]). Empty/undefined = any. */
+  stars?: number[];
 }
 
 export interface SearchTripMeta {
@@ -72,6 +74,7 @@ export async function searchTrip(
       stayType: input.stayType,
       minBedrooms: input.minBeds,
       minBathrooms: input.minBathrooms,
+      stars: input.stars,
     });
   }
 

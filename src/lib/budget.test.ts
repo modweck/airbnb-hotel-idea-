@@ -63,8 +63,33 @@ describe("normalizeBudget", () => {
 
   test("undefined max yields undefined caps", () => {
     const out = normalizeBudget({ budgetMode: "total" }, 4);
+    expect(out.totalMin).toBeUndefined();
     expect(out.totalMax).toBeUndefined();
     expect(out.perPersonMax).toBeUndefined();
+  });
+
+  test("total mode: budgetMin is passed through as totalMin", () => {
+    const out = normalizeBudget(
+      { budgetMin: 500, budgetMax: 1000, budgetMode: "total" },
+      4,
+    );
+    expect(out.totalMin).toBe(500);
+    expect(out.totalMax).toBe(1000);
+  });
+
+  test("per_person mode: budgetMin is multiplied by groupSize", () => {
+    const out = normalizeBudget(
+      { budgetMin: 100, budgetMax: 250, budgetMode: "per_person" },
+      4,
+    );
+    expect(out.totalMin).toBe(400);
+    expect(out.totalMax).toBe(1000);
+  });
+
+  test("only budgetMin set yields totalMin without totalMax", () => {
+    const out = normalizeBudget({ budgetMin: 500, budgetMode: "total" }, 4);
+    expect(out.totalMin).toBe(500);
+    expect(out.totalMax).toBeUndefined();
   });
 
   test("undefined mode is treated as total", () => {
@@ -127,6 +152,51 @@ describe("listingMatchesBudget", () => {
   test("no max set → match", () => {
     const l = makeListing({ id: "a", totalForStay: 9999 });
     expect(listingMatchesBudget(l, {}, 4)).toBe("match");
+  });
+
+  test("listing below budgetMin → exclude (no overflow grace below floor)", () => {
+    const inputWithMin = {
+      budgetMin: 500,
+      budgetMax: 1000,
+      budgetMode: "total" as const,
+    };
+    const l = makeListing({ id: "cheap", totalForStay: 400 });
+    expect(listingMatchesBudget(l, inputWithMin, 4)).toBe("exclude");
+  });
+
+  test("listing exactly at budgetMin → match", () => {
+    const inputWithMin = {
+      budgetMin: 500,
+      budgetMax: 1000,
+      budgetMode: "total" as const,
+    };
+    const l = makeListing({ id: "floor", totalForStay: 500 });
+    expect(listingMatchesBudget(l, inputWithMin, 4)).toBe("match");
+  });
+
+  test("only budgetMin set: above floor → match", () => {
+    const inputOnlyMin = { budgetMin: 500, budgetMode: "total" as const };
+    const l = makeListing({ id: "ok", totalForStay: 2000 });
+    expect(listingMatchesBudget(l, inputOnlyMin, 4)).toBe("match");
+  });
+
+  test("only budgetMin set: below floor → exclude", () => {
+    const inputOnlyMin = { budgetMin: 500, budgetMode: "total" as const };
+    const l = makeListing({ id: "too-cheap", totalForStay: 100 });
+    expect(listingMatchesBudget(l, inputOnlyMin, 4)).toBe("exclude");
+  });
+
+  test("per_person mode: budgetMin is multiplied by groupSize", () => {
+    const inputPP = {
+      budgetMin: 100,
+      budgetMax: 250,
+      budgetMode: "per_person" as const,
+    };
+    // groupSize 4, totalMin = 400. $300 listing should be excluded.
+    const cheap = makeListing({ id: "cheap", totalForStay: 300 });
+    expect(listingMatchesBudget(cheap, inputPP, 4)).toBe("exclude");
+    const ok = makeListing({ id: "ok", totalForStay: 800 });
+    expect(listingMatchesBudget(ok, inputPP, 4)).toBe("match");
   });
 
   test("per_person mode: compares against converted total", () => {
