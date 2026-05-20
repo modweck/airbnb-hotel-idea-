@@ -2,6 +2,12 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { parseDigits } from "@/components/trip-form/shared";
 import type { TripFormState } from "@/components/trip-form/use-trip-form";
 
+/** Format a numeric value with thousands separators ("1234" → "1,234"). */
+function formatWithCommas(value: number | ""): string {
+  if (value === "" || !Number.isFinite(value)) return "";
+  return value.toLocaleString("en-US");
+}
+
 export function WhoBudget({ form }: { form: TripFormState }) {
   const {
     groupSize, setGroupSize,
@@ -114,7 +120,7 @@ export function WhoBudget({ form }: { form: TripFormState }) {
               keyboardType="number-pad"
               placeholder="Min"
               accessibilityLabel="Minimum budget"
-              value={String(budgetMin)}
+              value={formatWithCommas(budgetMin)}
               onChangeText={(t) => setBudgetMin(parseDigits(t))}
               className="flex-1 bg-transparent py-3 text-base"
             />
@@ -123,7 +129,7 @@ export function WhoBudget({ form }: { form: TripFormState }) {
               keyboardType="number-pad"
               placeholder="Max"
               accessibilityLabel="Maximum budget"
-              value={String(budgetMax)}
+              value={formatWithCommas(budgetMax)}
               onChangeText={(t) => setBudgetMax(parseDigits(t))}
               className="flex-1 bg-transparent py-3 text-base"
             />
