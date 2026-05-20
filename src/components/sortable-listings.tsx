@@ -35,12 +35,14 @@ export function SortableListings({
   groupSize,
   budgetMode,
   hasDistance,
+  onAddToTrip,
 }: {
   matched: Listing[];
   overflow: Listing[];
   groupSize: number;
   budgetMode: DisplayMode;
   hasDistance: boolean;
+  onAddToTrip?: (listing: Listing) => void;
 }) {
   const [sort, setSort] = useState<SortOption>("price");
 
@@ -100,6 +102,7 @@ export function SortableListings({
                 listing={l}
                 groupSize={groupSize}
                 budgetMode={budgetMode}
+                onAddToTrip={onAddToTrip}
               />
             ))}
           </View>
@@ -119,6 +122,7 @@ export function SortableListings({
                 groupSize={groupSize}
                 budgetMode={budgetMode}
                 overBudget
+                onAddToTrip={onAddToTrip}
               />
             ))}
           </View>
